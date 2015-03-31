@@ -40,3 +40,4 @@ syntax: regexp
 ^local/
 ^include/
 ^lib/
+^fribidi-.*/
