@@ -4,7 +4,6 @@
 time pyfribidi with all hebrew encodings.
 """
 
-import syspath
 import timeit
 import pyfribidi
 

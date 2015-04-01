@@ -4,7 +4,6 @@ try:
 except ImportError:
     from distutils.core import setup, Extension
 from distutils import sysconfig
-from distutils.util import strtobool
 import os
 
 lib_sources = """
@@ -34,7 +33,8 @@ define_macros = [("HAVE_CONFIG_H", 1)]
 def get_version():
     d = {}
     try:
-        execfile("pyfribidi.py", d, d)
+        with open("pyfribidi.py","r") as f:
+            exec(f.read(), d, d)
     except (ImportError, RuntimeError):
         pass
     return d["__version__"]

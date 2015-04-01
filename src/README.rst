@@ -7,8 +7,7 @@ This is a simple wrapper around fribidi.
 
 
 This version on PyPI has been packaged with the goal of being able to
-easy_install/pip install the wrapper. Therefor it includes the
-complete source of the fribidi library.
+easy_install/pip install the wrapper. Therefore it includes the
 
 The source for this version can be found here:
 https://github.com/pediapress/pyfribidi
