@@ -42,3 +42,5 @@ syntax: regexp
 ^lib/
 ^fribidi-.*/
 ^build.out$
+^src/fribidi-src$
+^src/pyfribidi.egg-info$

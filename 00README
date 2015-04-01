@@ -16,15 +16,15 @@ or run the build.vbs script. Both may need editing to reflect changes
 in the names of the folders.
 
 5) Assuming 4 worked you now have a configured fribidi source area.
-cd to pyfribidi-0.11.0 and make a link to the fribidi folder called
+cd to src and make a link to the fribidi folder called
 fribidi-src
 
 windows 
-   cd pyfribidi-0.11.0
-   junction ../fribidi-0.19.6 fribdi-src
+   cd src
+   junction fribidi-src ../fribidi-0.19.6
 
 linux
-   cd pyfribidi-0.11.0
+   cd src
    ln -s ../fribidi-0.19.6 fribdi-src
 
 6) build/install using the commands
