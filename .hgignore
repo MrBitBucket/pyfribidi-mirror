@@ -41,3 +41,4 @@ syntax: regexp
 ^include/
 ^lib/
 ^fribidi-.*/
+^build.out$

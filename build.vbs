@@ -44,7 +44,8 @@ Private Const strCVSPath = "cvs.exe"
 Private Const strCompilerPath = "cl.exe"
 Private Const strLinkerPath = "link.exe"
 Private Const strDiffPath = "diff.exe"
-Private Const strLogPath = "c:\tmp\build27.out"
+Private Const strLogPath = "build.out"
+Private Const popupMessages = False
 
 
 ' Run make
@@ -1173,14 +1174,14 @@ Private Function ProcessStreams(oExec, sOutputFilename)
                     ProcessStreams = False
                 End If
             Else
-                WScript.Echo oExec.StdOut.ReadAll
+                LogInfo oExec.StdOut.ReadAll
             End If
         End If
     End If
 
     ' Check for contents on the error stream
     If Not oExec.StdErr.AtEndOfStream Then
-        WScript.Echo oExec.StdErr.ReadAll
+        LogError oExec.StdErr.ReadAll, False
     End If
 
 End Function
@@ -1567,7 +1568,12 @@ Private Sub LogDebug(sMessage)
 
     ' Write out the debug message, if debugging
     If blDebug Then
-        WScript.Echo "DBG: " & sMessage
+		Dim dumb
+		If popupMessages then
+			WScript.Echo "DBG: " & sMessage
+		Else
+			dumb = WriteFile(strLogPath, "DBG: " & sMessage & vbCrLf, True)
+		End If
     End If
 
 End Sub
@@ -1579,7 +1585,12 @@ Private Sub LogInfo(sMessage)
     '*****************************************************
 
     ' Write out the info message
-    WScript.Echo sMessage
+	Dim dumb
+    If popupMessages then
+		WScript.Echo sMessage
+	Else
+		dumb = WriteFile(strLogPath, sMessage & vbCrLf, True)
+	End If
 
 End Sub
 
@@ -1591,7 +1602,12 @@ Private Sub LogError(sMessage, bQuit)
     '*****************************************************
 
     ' Write out the error message
-    WScript.Echo "ERR: " & sMessage
+	Dim dumb
+    If popupMessages then
+		WScript.Echo "ERR: " & sMessage
+	Else
+		dumb = WriteFile(strLogPath, "ERR: " & sMessage & vbCrLf, True)
+	End If
 
     ' Quit if requested
     If bQuit Then
