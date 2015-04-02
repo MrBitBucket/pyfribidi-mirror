@@ -1,0 +1,60 @@
+Windows Build
+1) Down load the version of fribidi you intend to build from and
+untar into a folder parallel to this one. I used fribidi-0.19.6
+Either rename this folder to fribidi-src or create a link to the
+one you downloaded eg
+   cd .. && junction fribidi-src fribidi-0.19.6
+
+2) Edit win/fribidi-config.h to reflect the correct version.
+
+3) run vcvarsall.bat for the C platform you intend building for.
+
+4) run the win/build.vbs script it should produce a build.out text
+file containing messages from the script.
+
+5) Assuming 4 worked you now have a configured fribidi source area.
+build the extension module using
+    python setup.py build
+
+
+linux build
+1) Down load the version of fribidi you intend to build from and
+untar into a folder parallel to this one. I used fribidi-0.19.6
+Either rename this folder to fribidi-src or create a link to the
+one you downloaded eg
+   cd .. && ln -s fribidi-0.19.6 fribidi-src
+
+2) cd fribidi-src
+./configure --with-glib=no
+
+
+3) compile the generators
+   cd gen.tab
+   make gen-unicode-version gen-arabic-shaping-tab gen-mirroring-tab gen-bidi-type-tab gen-joining-type-tab
+
+4) generate the latest tables
+   cd ..
+   gen.tab/gen-unicode-version "gen.tab/unidata/ReadMe.txt" "gen.tab/unidata/BidiMirroring.txt" > "lib/fribidi-unicode-version.h"
+   gen.tab/gen-bidi-type-tab 2 "gen.tab/unidata/UnicodeData.txt" > "lib/bidi-type.tab.i"
+   gen.tab/gen-joining-type-tab 2 "gen.tab/unidata/UnicodeData.txt" "gen.tab/unidata/ArabicShaping.txt" > "lib/joining-type.tab.i"
+   gen.tab/gen-arabic-shaping-tab 2 "gen.tab/unidata/UnicodeData.txt" > "lib/arabic-shaping.tab.i"
+   gen.tab/gen-mirroring-tab 2 "gen.tab/unidata/BidiMirroring.txt" > "lib/mirroring.tab.i"
+
+5) make the latest fribidi
+   make all
+
+6) If you want test the fribidi now built
+   bin/fribidi --test --charset "CapRTL" "test/test_CapRTL_explicit.input" > "test/test_CapRTL_explicit.output"
+   diff -U 0 "test/test_CapRTL_explicit.output" "test/test_CapRTL_explicit.reference"
+   bin/fribidi --test --charset "CapRTL" "test/test_CapRTL_implicit.input" > "test/test_CapRTL_implicit.output"
+   diff -U 0 "test/test_CapRTL_implicit.output" "test/test_CapRTL_implicit.reference"
+   bin/fribidi --test --charset "ISO8859-8" "test/test_ISO8859-8_hebrew.input" > "test/test_ISO8859-8_hebrew.output"
+   diff -U 0 "test/test_ISO8859-8_hebrew.output" "test/test_ISO8859-8_hebrew.reference"
+   bin/fribidi --test --charset "UTF-8" "test/test_UTF-8_persian.input" > "test/test_UTF-8_persian.output"
+   diff -U 0 "test/test_UTF-8_persian.output" "test/test_UTF-8_persian.reference"
+   bin/fribidi --test --charset "UTF-8" "test/test_UTF-8_reordernsm.input" > "test/test_UTF-8_reordernsm.output"
+   diff -U 0 "test/test_UTF-8_reordernsm.output" "test/test_UTF-8_reordernsm.reference"
+
+6) cd to the pyfribidi directory and build/install your package
+   cd ../pyfribidi
+   python setup.py build

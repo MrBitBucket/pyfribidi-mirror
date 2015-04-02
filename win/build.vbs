@@ -33,14 +33,23 @@ Private Const blKeepFiles = False
 Private Const blRunTests = True
 Private Const intCompression = 2
 Private Const strUnicodeData = "gen.tab\unidata\"
-Private Const strBaseDirectory = "fribidi-0.19.6"
 
-' Fribidi CVS repository location
-Private Const strCVSRepository = "pserver:anoncvs@anoncvs.freedesktop.org:/cvs/fribidi"
-Private Const strCVSModule = "fribidi2"
+Function winPath
+	Dim fs
+	Set fs = CreateObject("Scripting.FileSystemObject")
+	winPath = fs.GetAbsolutePathName(fs.GetParentFolderName(Wscript.ScriptFullName))
+	Set fs = Nothing
+End Function
 
-' Paths to the various build tools used
-Private Const strCVSPath = "cvs.exe"
+Function fribidiPath(p)
+	Dim fs
+	Set fs = CreateObject("Scripting.FileSystemObject")
+	fribidiPath = fs.GetAbsolutePathName(winPath & "\" & p)
+	Set fs = Nothing
+End Function
+
+Dim fribidiSrcDir 
+fribidiSrcDir = fribidiPath("..\..\fribidi-src")
 Private Const strCompilerPath = "cl.exe"
 Private Const strLinkerPath = "link.exe"
 Private Const strDiffPath = "diff.exe"
@@ -79,8 +88,7 @@ Private Sub Make
     End If
 
     ' Setup the environment
-    If Not SetupEnvironment(strCVSRepository, strCVSModule, "win", _
-        False, "") Then
+    If Not SetupEnvironment Then
         LogError "Unable to setup environment for building", True
     End If
 
@@ -210,12 +218,10 @@ Private Sub Make
 
 End Sub
 
-Private Function Clean(bBuildPyfribidi)
+Private Function Clean(dummy)
 
     '*****************************************************
     '* Deletes all output files from the Fribidi build.
-	'* bBuildPyfribidi is true, also deletes the build\ 
-	'* Always returns
     '*****************************************************
 
     ' Delete all output files
@@ -245,103 +251,26 @@ Private Function Clean(bBuildPyfribidi)
 
 End Function
 
-Private Function CheckoutCVS(sRepository, sModule)
+Private Function SetupEnvironment
 
     '*****************************************************
-    '* Checks out the specified module from the given 
-    '* repository. If a folder with the module name 
-    '* already exists, this will return false. If a base 
-    '* directory is configured and does not already exist, 
-    '* the checked out module folder will be renamed to 
-    '* match the base directory. Returns true if 
-    '* successful, false otherwise.
+    '* Sets up the environment for building Fribidi.
+	'* Returns true if successful, false otherwise.
     '*****************************************************
 
-    Dim objFSO, strCommand, fld
-
-    ' If the target folder exists, can't checkout
-    Set objFSO = CreateObject("Scripting.FileSystemObject")
-    If objFSO.FolderExists(sModule) Then
-        LogDebug "Checkout directory already exists, not checking out"
-        Set objFSO = Nothing
-        Exit Function
-    End If
-
-    ' Create and run the command
-    strCommand = strCVSPath & " -Q -d:" & strCVSRepository & " co " & sModule
-    If Not Run(strCommand, Null) Then
-        LogError "Unable to checkout repository " & sModule, False
-        Set objFSO = Nothing
-        Exit Function
-    End If
-
-    ' Rename the directory if necessary
-    If StrComp(sModule, strBaseDirectory, 1) <> 0 Then
-        LogDebug "Renaming repository to " & strBaseDirectory
-        If objFSO.FolderExists(strBaseDirectory) Then
-            LogError "Unable to rename repository to " & strBaseDirectory, False
-            Set objFSO = Nothing
-            Exit Function
-        End If
-        Set fld = objFSO.GetFolder(sModule)
-        fld.Name = strBaseDirectory
-        Set fld = Nothing
-    End If
-
-    ' Cleanup and return
-    Set objFSO = Nothing
-    CheckoutCVS = True
-
-End Function
-
-Private Function SetupEnvironment(sRepository, sModule, sWinFolder, _
-    bBuildPyfribidi, sPyfribidiFolder)
-
-    '*****************************************************
-    '* Sets up the environment for building Fribidi. This 
-	'* involves checking out the code from CVS if not 
-	'* already available, copying the config files to a 
-	'* win\ directory, and copying the Pyfribidi source 
-	'* files if building it. Returns true if successful, 
-	'* false otherwise.
-    '*****************************************************
-
-    Dim objFSO, strTarget
+    Dim objFSO
 
     ' Checkout the code, if necessary
     LogInfo "Setting up environment for build"
     Set objFSO = CreateObject("Scripting.FileSystemObject")
-    If Not objFSO.FolderExists(strBaseDirectory) Then
-        LogInfo "Checking out repository"
-        If Not CheckoutCVS(sRepository, sModule) Then
-            LogError "Unable to setup repository " & sModule, False
-            Set objFSO = Nothing
-            Exit Function
-        End If
+    If Not objFSO.FolderExists(fribidiSrcDir) Then
+		LogError "cannot locate fribidi source @ '" & fribidiSrcDir & "'", True
     End If
-
-    ' Make sure the target exists
-    strTarget = ExpandPath(sWinFolder)
-    If Not objFSO.FolderExists(strTarget) Then
-        LogDebug "Creating folder " & strTarget
-        objFSO.CreateFolder strTarget
-    End If
-
-    ' Add a trailing slash to make FSO happy
-    If Right(strTarget, 1) <> "\" Then
-        strTarget = strTarget & "\"
-    End If
-
-    ' Copy the config files to their folder
-    LogDebug "Copying config files"
-    objFSO.CopyFile "config.h", strTarget, True
-    objFSO.CopyFile "fribidi-config.h", strTarget, True
 
     ' Return success
     Set objFSO = Nothing
     SetupEnvironment = True
     LogInfo ""
-
 End Function
 
 Private Function PatchDLLExport(sFilename)
@@ -960,8 +889,8 @@ Private Function BuildPath(sFolder, sFilename, bExpand)
     ' Build and return the path
     Set objFSO = CreateObject("Scripting.FileSystemObject")
     BuildPath = objFSO.BuildPath(sFolder, sFilename)
-    If bExpand And Len(strBaseDirectory) > 0 Then
-        BuildPath = objFSO.BuildPath(strBaseDirectory, BuildPath)
+    If bExpand And Len(fribidiSrcDir) > 0 Then
+        BuildPath = objFSO.BuildPath(fribidiSrcDir, BuildPath)
     End If
     Set objFSO = Nothing
 
@@ -988,8 +917,8 @@ Private Function BuildPaths(sFolder, aFilenames, sSeparator, bExpand)
         Else
             strPath = objFSO.BuildPath(sFolder, strFilename)
         End If
-        If bExpand And Len(strBaseDirectory) Then
-            strPath = objFSO.BuildPath(strBaseDirectory, strPath)
+        If bExpand And Len(fribidiSrcDir) Then
+            strPath = objFSO.BuildPath(fribidiSrcDir, strPath)
         End If
         strFilename = """" & strPath & """"
         strPaths = strPaths & strFilename & sSeparator
@@ -1017,9 +946,9 @@ Private Function ExpandPath(sPath)
 
     ' Expand and return the path
     ExpandPath = sPath
-    If Len(strBaseDirectory) > 0 Then
+    If Len(fribidiSrcDir) > 0 Then
         Set objFSO = CreateObject("Scripting.FileSystemObject")
-        ExpandPath = objFSO.BuildPath(strBaseDirectory, sPath)
+        ExpandPath = objFSO.BuildPath(fribidiSrcDir, sPath)
         Set objFSO = Nothing
     End If
 
@@ -1374,7 +1303,7 @@ Private Function Compile(sFolder, aSources, sOutput, bClean)
 
     ' Create the command file contents
     strContents = "/Ox /Ob2 /Oi /Ot /Oy /GT /I """ & ExpandPath("charset") & _
-        """ /I """ & ExpandPath("lib") & """ /I """ & ExpandPath("win") & _
+        """ /I """ & ExpandPath("lib") & """ /I """ & winPath & _
         """ /D ""WIN32"" /D ""NDEBUG"" /D ""HAVE_CONFIG_H"" /D " & _
         """BUILDING_FRIBIDI"" " & strOptional & "/FD /EHsc /MT /GS /Zc:wchar_t " & _
         "/Zc:forScope /GR /Fo""" & Replace(sFolder, "\", "/") & """ /Fd""" & _
