@@ -36,14 +36,16 @@ static PyObject *unicode_log2vis(PyUnicodeObject* u,
 	Py_ssize_t length = PYUNICODE_GET_LENGTH(u), i;
 	FriBidiChar *logical = NULL;	/* input fribidi unicode buffer */
 	FriBidiChar *visual = NULL;		/* output fribidi unicode buffer */
-	PyUnicodeObject *result = NULL;
 #ifdef isPy3
 	void *data = NULL;
 	int	kind;
 #	define READ(i) PyUnicode_READ(kind,data,i) 
+#	define RESULT_TYPE PyObject
 #else
 #	define READ(i) u->str[i]
+#	define RESULT_TYPE PyUnicodeObject
 #endif
+	RESULT_TYPE *result = NULL;
 
 	/* Allocate fribidi unicode buffers
 	   TODO - Don't copy strings if sizeof(FriBidiChar) == sizeof(Py_UNICODE)
@@ -70,13 +72,13 @@ static PyObject *unicode_log2vis(PyUnicodeObject* u,
 	/* Convert to unicode and order visually */
 	fribidi_set_reorder_nsm(reordernsm);
 
-	if(!fribidi_log2vis(logical, length, &base_direction, visual, NULL, NULL, NULL)){
+	if(!fribidi_log2vis(logical, (const FriBidiStrIndex)length, &base_direction, visual, NULL, NULL, NULL)){
 		PyErr_SetString(PyExc_RuntimeError, "fribidi failed to order string");
 		goto cleanup;
 		}
 
 	/* Cleanup the string if requested */
-	if(clean) length = fribidi_remove_bidi_marks (visual, length, NULL, NULL, NULL);
+	if(clean) length = fribidi_remove_bidi_marks(visual, (const FriBidiStrIndex)length, NULL, NULL, NULL);
 #ifdef isPy3
 	result = PyUnicode_FromKindAndData(PyUnicode_4BYTE_KIND,(void*)visual, length);
 #else
