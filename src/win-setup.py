@@ -3,7 +3,6 @@ try:
     from setuptools import setup, Extension
 except ImportError:
     from distutils.core import setup, Extension
-from distutils import sysconfig
 import os
 
 lib_sources = """

@@ -28,8 +28,6 @@
 #else
 #	define CMODNAME init_pyfribidi
 #	define PYUNICODE_GET_LENGTH PyUnicode_GET_SIZE
-#	define PyUnicode_ReadChar(u,i) u->str[i]
-#	define PyUnicode_WriteChar(u,i,v) u->str[i] = v
 #endif
 
 static PyObject *unicode_log2vis(PyUnicodeObject* u,
@@ -39,6 +37,13 @@ static PyObject *unicode_log2vis(PyUnicodeObject* u,
 	FriBidiChar *logical = NULL;	/* input fribidi unicode buffer */
 	FriBidiChar *visual = NULL;		/* output fribidi unicode buffer */
 	PyUnicodeObject *result = NULL;
+#ifdef isPy3
+	void *data = NULL;
+	int	kind;
+#	define READ(i) PyUnicode_READ(kind,data,i) 
+#else
+#	define READ(i) u->str[i]
+#endif
 
 	/* Allocate fribidi unicode buffers
 	   TODO - Don't copy strings if sizeof(FriBidiChar) == sizeof(Py_UNICODE)
@@ -53,8 +58,13 @@ static PyObject *unicode_log2vis(PyUnicodeObject* u,
 		goto cleanup;
 		}
 
+#ifdef isPy3
+	if(PyUnicode_READY(u)) goto cleanup;
+	data = PyUnicode_DATA(u);
+	kind = PyUnicode_KIND(u);
+#endif
 	for(i=0; i<length; ++i){
-		logical[i] = PyUnicode_ReadChar(u,i);
+		logical[i] = READ(i);
 		}
 
 	/* Convert to unicode and order visually */
@@ -67,10 +77,14 @@ static PyObject *unicode_log2vis(PyUnicodeObject* u,
 
 	/* Cleanup the string if requested */
 	if(clean) length = fribidi_remove_bidi_marks (visual, length, NULL, NULL, NULL);
+#ifdef isPy3
+	result = PyUnicode_FromKindAndData(PyUnicode_4BYTE_KIND,(void*)visual, length);
+#else
 	if(!(result=(PyUnicodeObject*)PyUnicode_FromUnicode(NULL, length))) goto cleanup;
 	for(i=0; i<length; ++i){
-		PyUnicode_WriteChar(result,i,visual[i]);
+		result->str[i] = visual[i];
 		}
+#endif
 
 cleanup:
 	/* Delete unicode buffers */
