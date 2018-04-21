@@ -44,3 +44,4 @@ syntax: regexp
 ^build.out$
 ^dist$
 ^pyfribidi.egg-info$
+^src/pyfribidi.egg-info$
