@@ -4,14 +4,15 @@ pyfribidi uses libfribidi to order text visually using the unicode
 algorithm. pyfribidi can also convert text from visual order to
 logical order, but the conversion may be wrong in certain cases.
 """
-__version__ = "0.12.1"
-__all__ = ('log2vis', 'LTR', 'ON', 'RTL', '__version__', '_log2vis', 'log2vis')
+__version__ = '0.14.0'
+__all__ = ('log2vis', 'LTR', 'ON', 'RTL', 'WLTR', 'WRTL', 'pyFribidiVersion', 'fribidiVersion', 'fribidiInterfaceVersion', 'fribidiUnicodeVersion', '_log2vis', 'log2vis')
 import sys
 isPy3 = sys.version_info[0]==3
 if isPy3:
     unicode = str
 
-from _pyfribidi import LTR, ON, RTL, log2vis as _log2vis
+from _pyfribidi import LTR, ON, RTL, WLTR, WRTL, pyFribidiVersion, fribidiVersion, fribidiInterfaceVersion, fribidiUnicodeVersion, log2vis as _log2vis
+assert __version__==pyFribidiVersion, "Non matching version pyfribidi=%s!= _pyfribidi=%s" % (__version__,pyFribidiVersion)
 
 def log2vis(logical, base_direction=RTL, encoding="utf-8", clean=False, reordernsm=True):
     """

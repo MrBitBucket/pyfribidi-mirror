@@ -23,26 +23,25 @@ lib/fribidi.c
 lib/fribidi-arabic.c
 lib/fribidi-bidi.c
 lib/fribidi-bidi-types.c
+lib/fribidi-brackets.c
 lib/fribidi-deprecated.c
 lib/fribidi-joining.c
 lib/fribidi-joining-types.c
-lib/fribidi-mem.c
 lib/fribidi-mirroring.c
 lib/fribidi-run.c
 lib/fribidi-shape.c
-charset/fribidi-char-sets-cp1256.c
-charset/fribidi-char-sets-iso8859-8.c
-charset/fribidi-char-sets-cap-rtl.c
-charset/fribidi-char-sets-utf8.c
-charset/fribidi-char-sets.c
-charset/fribidi-char-sets-cp1255.c
-charset/fribidi-char-sets-iso8859-6.c
+lib/fribidi-char-sets-cp1256.c
+lib/fribidi-char-sets-iso8859-8.c
+lib/fribidi-char-sets-cap-rtl.c
+lib/fribidi-char-sets-utf8.c
+lib/fribidi-char-sets.c
+lib/fribidi-char-sets-cp1255.c
+lib/fribidi-char-sets-iso8859-6.c
 """.split()]
 libraries = []
-include_dirs = [fribidi_src, pjoin(fribidi_src,"lib"), pjoin(fribidi_src,"charset")]
+include_dirs = [fribidi_src, pjoin(fribidi_src,"lib")]
 if sys.platform=='win32':
     include_dirs.append(pjoin(here,'win'))
-define_macros = [("HAVE_CONFIG_H", 1)]
 
 def get_version():
     d = {}
@@ -53,8 +52,11 @@ def get_version():
         pass
     return d["__version__"]
 
+pyFribidiVersion=get_version()
+define_macros = [("HAVE_CONFIG_H", 1),("PYFRIBIDI_VERSION",'"%s"' % pyFribidiVersion)]
+
 setup(name="pyfribidi",
-  version=get_version(),
+  version=pyFribidiVersion,
   description="Python libfribidi interface",
   author="Yaacov Zamir, Nir Soffer, Robin Becker",
   author_email="kzamir@walla.co.il",

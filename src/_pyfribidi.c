@@ -22,6 +22,10 @@
 #endif
 #include <fribidi.h>
 
+#ifndef PYFRIBIDI_VERSION
+#	define PYFRIBIDI_VERSION "0.0.0"
+#endif
+
 #ifdef isPy3
 #	define CMODNAME PyInit__pyfribidi
 #	define PYUNICODE_GET_LENGTH PyUnicode_GET_LENGTH
@@ -146,7 +150,14 @@ PyMODINIT_FUNC CMODNAME(void){
 	if(!module) goto err;
 	if(		PyModule_AddIntConstant(module, "RTL", (long)FRIBIDI_TYPE_RTL)
 		||	PyModule_AddIntConstant(module, "LTR", (long)FRIBIDI_TYPE_LTR)
-		||	PyModule_AddIntConstant(module, "ON", (long)FRIBIDI_TYPE_ON))
+		||	PyModule_AddIntConstant(module, "ON", (long)FRIBIDI_TYPE_ON)
+		||	PyModule_AddIntConstant(module, "WLTR", (long)FRIBIDI_PAR_WLTR)
+		||	PyModule_AddIntConstant(module, "WRTL", (long)FRIBIDI_PAR_WRTL)
+		||	PyModule_AddStringConstant(module, "pyFribidiVersion", (const char *)PYFRIBIDI_VERSION)
+		||	PyModule_AddStringConstant(module, "fribidiVersion", (const char *)FRIBIDI_VERSION)
+		||	PyModule_AddStringConstant(module, "fribidiInterfaceVersion", (const char *)FRIBIDI_INTERFACE_VERSION_STRING)
+		||	PyModule_AddStringConstant(module, "fribidiUnicodeVersion", (const char *)FRIBIDI_UNICODE_VERSION)
+		)
 		goto err;
 #ifdef isPy3
 	return module;
