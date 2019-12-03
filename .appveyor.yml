@@ -78,7 +78,7 @@ install:
   - cmd: if not exist C:\Python%PYVER%\python.exe ( echo "!!!!!!!!!!!!!!!!!!!!!!! C:\Python%PYVER%\python.exe not found" && exit 1 )
   - cmd: if not exist C:\Python%PYVER%\scripts\pip.exe ( echo "!!!!!!!!!!!!!!!!!!!!!!! C:\Python%PYVER%\scripts\pip.exe not found" && exit 1 )
   - call "%VS140COMNTOOLS%\..\..\VC\vcvarsall.bat" %ARCH%
-  - cmd: git clone https://github.com/fribidi/fribdi c:\projects\fribidi-src
+  - cmd: git clone https://github.com/fribidi/fribidi c:\projects\fribidi-src
 
 build_script:
   - if "%PYVER%" == "%FIRST%" c:\projects\myenv\scripts\python.exe -mrl_ci_tools clear-cache %RLCACHE%
