@@ -1,0 +1,122 @@
+branches:
+  only:
+  - master
+env:
+  global:
+  - REPO_DIR=pyfribidi
+  - MULTIBUILD_DIR=multibuild
+  - CONFIG_PATH=.travis-config.sh
+  - BUILD_COMMIT=master
+  - PLAT=x86_64
+  - UNICODE_WIDTH=32
+  - BUILD_DEPENDS=""
+  - TWINE_USERNAME=MrRLBitBucket
+  - CITOOLS_USER=rl-wheelbuilder
+  - RLCACHE=manylinux/pyfribidi
+  - secure: cJuvkAlFYlAYoEiFkbtvGkT/VP9Pgi3zlUmTgGE8wbxJl3pB3MKAxOQPvPPU9kp0z+zMCA8bUxStfJhV60MBN/A8E7/+mOQ4yUnmQUdYlOFGck2ZK1a6849AmjzMN8wUGFS0TuKlZTfpp02mMl8LqD821y4pvqCYoSa/RMfDb9FX1EQfSSRQMWcsqAb8A++MwYItzX6Nm/+x1D1O68fLE16HuT6MjBKafESf15nzUdgWzKATR45y0nuNDfUTffsAoLr7nRf+Lk5tr33V2ptyhZ/vOG7ygTRDx8NzrAVzyzj9L+YEp99YH+TryujHdPnL7YCbnPJOiIiZXQl7GdhuELd1ncdZDGzz39nXE70sWzUuQpSmxQ3iIZhQ2I9mPrJyOzEYFhkF5I2cc8+Bk6eEWGWQOHy1f9rHcWOmVJ9Q2zfdNTAgHBNnMy2S1S7H77RDA7Vj+0NToPS7s4GOSxeAowthbgciK2bflLcXfnjhN+tnhoPvd6aHCSDX4PbCWgSFYz+y6w09OaMB50nQ9pN35vkC1Z0NkcPhw7RpftEBF/IKAxsUIpRbK78Z9brf1wDNgu4I9sUhn2JPrAm1Tqiv318NrNPsMyI//IIdYCP3gw37lO54+poSnECCgjr71hus6oRJ6WwQrQG4EBwqqTfBiemMKb2S6po5aDHrtLZw9W4=
+  # travis encrypt -r MrBitBucket/pyfribidi-mirror CITOOLS_PASSWORD="**********************" --add with extra bash quoting
+language: python
+# Default Python version is usually 3.5
+python: 3.5
+sudo: required
+dist: trusty
+services: docker
+
+notifications:
+  email:
+    recipients:
+    - bitbucket@reportlab.com
+    - live_errors@reportlab.com
+    on_success: always
+    on_failure: always
+matrix:
+  exclude:
+  # Exclude the default Python 3.5 build
+  - python: 3.5
+  include:
+  - os: linux
+    env:
+    - UNICODE_WIDTH=16
+    - MB_PYTHON_VERSION=2.7
+  - os: linux
+    env:
+    - UNICODE_WIDTH=16
+    - MB_PYTHON_VERSION=2.7
+    - PLAT=i686
+  - os: linux
+    env:
+    - MB_PYTHON_VERSION=2.7
+  - os: linux
+    env:
+    - MB_PYTHON_VERSION=2.7
+    - PLAT=i686
+  - os: linux
+    env:
+    - MB_PYTHON_VERSION=3.5
+  - os: linux
+    env:
+    - MB_PYTHON_VERSION=3.5
+    - PLAT=i686
+  - os: linux
+    env:
+    - MB_PYTHON_VERSION=3.6
+  - os: linux
+    env:
+    - MB_PYTHON_VERSION=3.6
+    - PLAT=i686
+  - os: linux
+    env:
+    - MB_PYTHON_VERSION=3.7
+  - os: linux
+    env:
+    - MB_PYTHON_VERSION=3.7
+    - PLAT=i686
+  - os: linux
+    env:
+    - MB_PYTHON_VERSION=3.8
+  - os: linux
+    env:
+    - MB_PYTHON_VERSION=3.8
+    - PLAT=i686
+  - os: osx
+    language: generic
+    env:
+    - MB_PYTHON_VERSION=2.7
+  - os: osx
+    language: generic
+    env:
+    - MB_PYTHON_VERSION=3.5
+  - os: osx
+    language: generic
+    env:
+    - MB_PYTHON_VERSION=3.6
+  - os: osx
+    language: generic
+    env:
+    - MB_PYTHON_VERSION=3.7
+  - os: osx
+    language: generic
+    env:
+    - MB_PYTHON_VERSION=3.8
+    - MB_PYTHON_OSX_VER=10.9
+before_install:
+- git clone https://github.com/matthew-brett/multibuild $MULTIBUILD_DIR
+- cd $MULTIBUILD_DIR
+- git checkout 44910268b56c0a1cffa2025c69844cf253fabaf0
+- cd ..
+- git clone https://github.com/fribidi/fribidi fribidi-src
+- cd fribidi-src
+- git checkout 034c6e9a1d296286305f4cfd1e0072b879f52568
+- cd ..
+- git clone https://github.com/MrBitBucket/pyfribidi-mirror $REPO_DIR
+- source $MULTIBUILD_DIR/common_utils.sh
+- source $MULTIBUILD_DIR/travis_steps.sh
+- before_install
+install:
+- clean_code $REPO_DIR $BUILD_COMMIT
+- build_wheel $REPO_DIR $PLAT
+script:
+- install_run $PLAT
+after_success:
+- pip install https://hg.reportlab.com/hg-public/rl-ci-tools/archive/tip.tar.gz -U
+- python -mrl_ci_tools upload-caches --subdir="$RLCACHE" --verbosity=1 ${TRAVIS_BUILD_DIR}/wheelhouse/*

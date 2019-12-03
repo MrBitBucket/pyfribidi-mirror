@@ -6,6 +6,7 @@ except ImportError:
 import sys,os
 
 pjoin=os.path.join
+isfile = os.path.isfile
 here = os.path.dirname(sys.argv[0])
 if not here:
     here = os.getcwd()
@@ -14,8 +15,6 @@ here = os.path.normpath(here)
 fribidi_src = os.path.normpath(pjoin(here,'..','fribidi-src'))
 if not os.path.isdir(fribidi_src):
     raise ValueError('Cannot locate fribdi-src directory %r' % fribidi_src)
-if sys.platform!='win32' and not os.path.exists(pjoin(fribidi_src,"config.status")):
-    raise ValueError('you need to configure and make in the %s directory' % fribidi_src)
 src = pjoin(here,'src')
 
 lib_sources = [pjoin(fribidi_src,p) for p in """
@@ -39,9 +38,20 @@ lib/fribidi-char-sets-cp1255.c
 lib/fribidi-char-sets-iso8859-6.c
 """.split()]
 libraries = []
-include_dirs = [fribidi_src, pjoin(fribidi_src,"lib")]
-if sys.platform=='win32':
-    include_dirs.append(pjoin(here,'win'))
+def getIncludeDirs():
+    for top in ('build',None):
+        top = pjoin(fribidi_src,top) if top else top
+        lib = pjoin(top,'lib')
+        if isfile(pjoin(top,'config.h')) and isfile(pjoin(lib,'fribidi-config.h')):
+            return [top,lib]
+    raise ValueError('''Cannot locate a suitable config.h file.
+    meson -Ddocs=false --backend=ninja build
+    ninja -C build test
+or
+    ./autogen.sh
+    ./configure''')
+
+include_dirs = getIncludeDirs() + [pjoin(fribidi_src,"lib")]
 
 def get_version():
     d = {}
