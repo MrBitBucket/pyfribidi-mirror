@@ -1,3 +1,13 @@
+function pre_build {
+	echo "===== pre_build ls($(pwd))"
+	ls
+	echo "===== pre_build ls(/opt)"
+	ls /opt
+	cd fribidi-src
+	./autogen.sh
+	./configure
+	}
+
 function run_tests {
 	(
 	echo -n "+++++ python version:";python -c"import sys;print(sys.version.split()[0])"

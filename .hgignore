@@ -45,3 +45,4 @@ syntax: regexp
 ^dist$
 ^pyfribidi.egg-info$
 ^src/pyfribidi.egg-info$
+^src/pyfribidi_version.h$

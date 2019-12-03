@@ -27,6 +27,9 @@ def locationValueError(msg):
     print('!!!!! %s\nls(%r)\n%s\n!!!!!''' % (msg,cwd,os.listdir(cwd)))
     raise ValueError(msg)
 
+def spaceList(L):
+    return ' '.join((repr(_) for _ in L))
+
 def getFribidiSrc():
     choices = (
             normpath(pjoin(here,'..','fribidi-src')),
@@ -35,12 +38,33 @@ def getFribidiSrc():
     for d in choices:
         if isdir(d) and isfile(pjoin(d,'lib','fribidi-common.h')):
             return d
-    locationValueError('Cannot locate fribidi-src directory from %s' % ' '.join((repr(d) for d in choices)))
+    locationValueError('Cannot locate fribidi-src directory from %s' % spaceList(choices))
 
 fribidi_src = getFribidiSrc()
 pyfribidi_src = pjoin(here,'src')
 if verbose:
-    print("+++++ fribidi_src=%r pyfribidi_src=%r" % (fribidi_src,pyfribidi_src))
+    print("+++++ fribidi_src=%r\n+++++ pyfribidi_src=%r" % (fribidi_src,pyfribidi_src))
+
+def getIncludeDirs():
+    for top in ('build',None):
+        top = pjoin(fribidi_src,top) if top else top
+        lib = pjoin(top,'lib')
+        if isfile(pjoin(top,'config.h')) and isfile(pjoin(lib,'fribidi-config.h')):
+            I = [top,lib]
+            if top:
+                gen = pjoin(top,'gen.tab')
+                if isfile(pjoin(gen,'fribidi-unicode-version.h')):
+                    I.append(gen)
+                return I
+    locationValueError('''Cannot locate a suitable config.h file.
+    meson -Ddocs=false --backend=ninja build
+    ninja -C build test
+or
+    ./autogen.sh
+    ./configure''')
+include_dirs = getIncludeDirs() + [pjoin(fribidi_src,"lib"),pjoin(fribidi_src,'gen.tab'),pyfribidi_src]
+if verbose:
+    print("+++++ include_dirs=%s" % spaceList(include_dirs))
 
 lib_sources = [pjoin(fribidi_src,p) for p in """
 lib/fribidi.c
@@ -63,25 +87,6 @@ lib/fribidi-char-sets-cp1255.c
 lib/fribidi-char-sets-iso8859-6.c
 """.split()]
 libraries = []
-def getIncludeDirs():
-    for top in ('build',None):
-        top = pjoin(fribidi_src,top) if top else top
-        lib = pjoin(top,'lib')
-        if isfile(pjoin(top,'config.h')) and isfile(pjoin(lib,'fribidi-config.h')):
-            I = [top,lib]
-            if top:
-                gen = pjoin(top,'gen.tab')
-                if isfile(pjoin(gen,'fribidi-unicode-version.h')):
-                    I.append(gen)
-                return I
-    locationValueError('''Cannot locate a suitable config.h file.
-    meson -Ddocs=false --backend=ninja build
-    ninja -C build test
-or
-    ./autogen.sh
-    ./configure''')
-
-include_dirs = getIncludeDirs() + [pjoin(fribidi_src,"lib"),pjoin(fribidi_src,'gen.tab')]
 
 def get_version():
     d = {}
@@ -93,7 +98,10 @@ def get_version():
     return d["__version__"]
 
 pyFribidiVersion=get_version()
-define_macros = [("HAVE_CONFIG_H", 1),("PYFRIBIDI_VERSION",'"%s"' % pyFribidiVersion)]
+with open(pjoin(pyfribidi_src,"pyfribidi_version.h"),'w') as f:
+    f.write('#define PYFRIBIDI_VERSION "%s"\n' % pyFribidiVersion)
+
+define_macros = [("HAVE_CONFIG_H", 1)]
 
 setup(name="pyfribidi",
   version=pyFribidiVersion,

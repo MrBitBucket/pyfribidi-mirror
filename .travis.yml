@@ -105,11 +105,11 @@ before_install:
 - cd $MULTIBUILD_DIR
 - git checkout 44910268b56c0a1cffa2025c69844cf253fabaf0
 - cd ..
-- git clone https://github.com/fribidi/fribidi fribidi-src
-- cd fribidi-src
-- git checkout 034c6e9a1d296286305f4cfd1e0072b879f52568
-- cd ..
 - git clone https://github.com/MrBitBucket/pyfribidi-mirror $REPO_DIR
+- git clone https://github.com/fribidi/fribidi $REPO_DIR/fribidi-src
+- cd $REPODIR/fribidi-src
+- git checkout 034c6e9a1d296286305f4cfd1e0072b879f52568
+- cd ../..
 - source $MULTIBUILD_DIR/common_utils.sh
 - source $MULTIBUILD_DIR/travis_steps.sh
 - before_install

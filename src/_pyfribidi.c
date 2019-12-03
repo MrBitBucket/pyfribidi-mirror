@@ -22,9 +22,7 @@
 #endif
 #include <fribidi.h>
 
-#ifndef PYFRIBIDI_VERSION
-#	define PYFRIBIDI_VERSION "0.0.0"
-#endif
+#include <pyfribidi_version.h>
 
 #ifdef isPy3
 #	define CMODNAME PyInit__pyfribidi
