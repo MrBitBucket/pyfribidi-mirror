@@ -12,10 +12,14 @@ here = os.path.dirname(sys.argv[0])
 if not here:
     here = os.getcwd()
 
+def locationValueError(msg):
+    print('!!!!! %s\nls(%r)\n%s\n!!!!!''' % (msg,os.getcwd(),os.listdir()))
+    raise ValueError(msg)
+
 here = os.path.normpath(here)
 fribidi_src = os.path.normpath(pjoin(here,'..','fribidi-src'))
 if not isdir(fribidi_src):
-    raise ValueError('Cannot locate fribidi-src directory %r' % fribidi_src)
+    locationValueError('Cannot locate fribidi-src directory %r' % fribidi_src)
 src = pjoin(here,'src')
 
 lib_sources = [pjoin(fribidi_src,p) for p in """
@@ -45,12 +49,12 @@ def getIncludeDirs():
         lib = pjoin(top,'lib')
         if isfile(pjoin(top,'config.h')) and isfile(pjoin(lib,'fribidi-config.h')):
             return [top,lib]
-    raise ValueError('''Cannot locate a suitable config.h file.
+    locationValueError('''Cannot locate a suitable config.h file.
     meson -Ddocs=false --backend=ninja build
     ninja -C build test
 or
     ./autogen.sh
-    ./configure\n###### ls(%r)\n%s\n''' % (os.getcwd(),os.listdir()))
+    ./configure''')
 
 include_dirs = getIncludeDirs() + [pjoin(fribidi_src,"lib")]
 
