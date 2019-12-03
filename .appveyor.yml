@@ -85,11 +85,11 @@ build_script:
   - cmd: if not exist C:\Python%PYVER%\python.exe ( echo "!!!!!!!!!!!!!!!!!!!!!!! C:\Python%PYVER%\python.exe not found" && exit 1 )
   - cmd: if not exist C:\Python%PYVER%\scripts\pip.exe ( echo "!!!!!!!!!!!!!!!!!!!!!!! C:\Python%PYVER%\scripts\pip.exe not found" && exit 1 )
   - cmd: cd c:\projects\fribidi-src
-  - cmd: cmd: c:\projects\myenv\scripts\activate
+  - cmd: c:\projects\myenv\scripts\activate
   - call "%VS140COMNTOOLS%\..\..\VC\vcvarsall.bat" %ARCH%
   - cmd: c:\projects\myenv\scripts\meson.exe -Ddocs=false --backend=ninja build
   - cmd: c:\projects\myenv\scripts\ninja.exe -C build
-  - cmd: cmd: c:\projects\myenv\scripts\deactivate
+  - cmd: c:\projects\myenv\scripts\deactivate
   - cmd: cd c:\projects\pyfribidi
   - cmd: c:\Python%PYVER%\python.exe -mpip install -U pip setuptools wheel
   - cmd: c:\Python%PYVER%\scripts\pip.exe --version

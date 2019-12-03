@@ -34,7 +34,7 @@ def getFribidiSrc():
     for d in choices:
         if isdir(d) and isfile(pjoin(d,'lib','fribidi-common.h')):
             return d
-    locationValueError('Cannot locate fribidi-src directory from %r' % choices)
+    locationValueError('Cannot locate fribidi-src directory from %s' % ' '.join((repr(d) for d in choices)))
 
 fribidi_src = getFribidiSrc()
 pyfribidi_src = pjoin(here,'src')
