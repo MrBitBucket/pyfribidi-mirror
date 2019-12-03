@@ -13,6 +13,7 @@ env:
   - TWINE_USERNAME=MrRLBitBucket
   - CITOOLS_USER=rl-wheelbuilder
   - RLCACHE=manylinux/pyfribidi
+  - SETUP_VERBOSE=1
   - secure: cJuvkAlFYlAYoEiFkbtvGkT/VP9Pgi3zlUmTgGE8wbxJl3pB3MKAxOQPvPPU9kp0z+zMCA8bUxStfJhV60MBN/A8E7/+mOQ4yUnmQUdYlOFGck2ZK1a6849AmjzMN8wUGFS0TuKlZTfpp02mMl8LqD821y4pvqCYoSa/RMfDb9FX1EQfSSRQMWcsqAb8A++MwYItzX6Nm/+x1D1O68fLE16HuT6MjBKafESf15nzUdgWzKATR45y0nuNDfUTffsAoLr7nRf+Lk5tr33V2ptyhZ/vOG7ygTRDx8NzrAVzyzj9L+YEp99YH+TryujHdPnL7YCbnPJOiIiZXQl7GdhuELd1ncdZDGzz39nXE70sWzUuQpSmxQ3iIZhQ2I9mPrJyOzEYFhkF5I2cc8+Bk6eEWGWQOHy1f9rHcWOmVJ9Q2zfdNTAgHBNnMy2S1S7H77RDA7Vj+0NToPS7s4GOSxeAowthbgciK2bflLcXfnjhN+tnhoPvd6aHCSDX4PbCWgSFYz+y6w09OaMB50nQ9pN35vkC1Z0NkcPhw7RpftEBF/IKAxsUIpRbK78Z9brf1wDNgu4I9sUhn2JPrAm1Tqiv318NrNPsMyI//IIdYCP3gw37lO54+poSnECCgjr71hus6oRJ6WwQrQG4EBwqqTfBiemMKb2S6po5aDHrtLZw9W4=
   # travis encrypt -r MrBitBucket/pyfribidi-mirror CITOOLS_PASSWORD="**********************" --add with extra bash quoting
 language: python

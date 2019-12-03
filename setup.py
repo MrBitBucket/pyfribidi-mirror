@@ -6,6 +6,7 @@ except ImportError:
 import sys,os
 
 pjoin=os.path.join
+normpath = os.path.normpath
 isfile = os.path.isfile
 isdir = os.path.isdir
 verbose=int(os.environ.get("SETUP_VERBOSE","0"))
@@ -18,17 +19,17 @@ if verbose:
 if not here:
     here = cwd
 
-here = os.path.normpath(here)
+here = normpath(here)
 if verbose:
     print("+++++ here=%r" % (here,))
 
 def locationValueError(msg):
-    print('!!!!! %s\nls(%r)\n%s\n!!!!!''' % (msg,os.getcwd(),os.listdir()))
+    print('!!!!! %s\nls(%r)\n%s\n!!!!!''' % (msg,cwd,os.listdir(cwd)))
     raise ValueError(msg)
 
 def getFribidiSrc():
     choices = (
-            pjoin(here,'..','fribidi-src'),
+            normpath(pjoin(here,'..','fribidi-src')),
             pjoin(here,'fribidi-src'),
             )
     for d in choices:
@@ -67,7 +68,12 @@ def getIncludeDirs():
         top = pjoin(fribidi_src,top) if top else top
         lib = pjoin(top,'lib')
         if isfile(pjoin(top,'config.h')) and isfile(pjoin(lib,'fribidi-config.h')):
-            return [top,lib]
+            I = [top,lib]
+            if top:
+                gen = pjoin(top,'gen.tab')
+                if isfile(pjoin(gen,'fribidi-unicode-version.h')):
+                    I.append(gen)
+                return I
     locationValueError('''Cannot locate a suitable config.h file.
     meson -Ddocs=false --backend=ninja build
     ninja -C build test
@@ -75,7 +81,7 @@ or
     ./autogen.sh
     ./configure''')
 
-include_dirs = getIncludeDirs() + [pjoin(fribidi_src,"lib")]
+include_dirs = getIncludeDirs() + [pjoin(fribidi_src,"lib"),pjoin(fribidi_src,'gen.tab')]
 
 def get_version():
     d = {}
