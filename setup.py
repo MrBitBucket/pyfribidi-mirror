@@ -8,19 +8,38 @@ import sys,os
 pjoin=os.path.join
 isfile = os.path.isfile
 isdir = os.path.isdir
+verbose=int(os.environ.get("SETUP_VERBOSE","0"))
+
 here = os.path.dirname(sys.argv[0])
+cwd = os.getcwd()
+if verbose:
+    print("+++++ sys.argv=%r dirname=%r cwd=%r" % (sys.argv,here,cwd))
+
 if not here:
-    here = os.getcwd()
+    here = cwd
+
+here = os.path.normpath(here)
+if verbose:
+    print("+++++ here=%r" % (here,))
 
 def locationValueError(msg):
     print('!!!!! %s\nls(%r)\n%s\n!!!!!''' % (msg,os.getcwd(),os.listdir()))
     raise ValueError(msg)
 
-here = os.path.normpath(here)
-fribidi_src = os.path.normpath(pjoin(here,'..','fribidi-src'))
-if not isdir(fribidi_src):
-    locationValueError('Cannot locate fribidi-src directory %r' % fribidi_src)
-src = pjoin(here,'src')
+def getFribidiSrc():
+    choices = (
+            pjoin(here,'..','fribidi-src'),
+            pjoin(here,'fribidi-src'),
+            )
+    for d in choices:
+        if isdir(d) and isfile(pjoin(d,'lib','fribidi-common.h')):
+            return d
+    locationValueError('Cannot locate fribidi-src directory from %r' % choices)
+
+fribidi_src = getFribidiSrc()
+pyfribidi_src = pjoin(here,'src')
+if verbose:
+    print("+++++ fribidi_src=%r pyfribidi_src=%r" % (fribidi_src,pyfribidi_src))
 
 lib_sources = [pjoin(fribidi_src,p) for p in """
 lib/fribidi.c
@@ -61,7 +80,7 @@ include_dirs = getIncludeDirs() + [pjoin(fribidi_src,"lib")]
 def get_version():
     d = {}
     try:
-        with open(pjoin(src,"pyfribidi.py"),"r") as f:
+        with open(pjoin(pyfribidi_src,"pyfribidi.py"),"r") as f:
             exec(f.read(), d, d)
     except (ImportError, RuntimeError):
         pass
@@ -78,11 +97,11 @@ setup(name="pyfribidi",
   url="https://github.com/pediapress/pyfribidi",
   license="GPL",
   long_description=open("README.rst").read(),
-  package_dir = {'':src},
+  package_dir = {'':pyfribidi_src},
   py_modules=["pyfribidi", "pyfribidi2"],
   ext_modules=[Extension(
         name='_pyfribidi',
-        sources=[pjoin(src,'_pyfribidi.c')] + lib_sources,
+        sources=[pjoin(pyfribidi_src,'_pyfribidi.c')] + lib_sources,
         define_macros=define_macros,
         libraries=libraries,
         include_dirs=include_dirs)])
