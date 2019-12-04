@@ -73,7 +73,7 @@ if verbose:
 staticLibExt = 'lib' if sys.platform=='win32' else 'a'
 if isdir(meson_lib):
     if sys.platform=='win32' and verbose:
-        print('+++++ meson_lib ls(%r)\n%s' % (meson_lib,spaceLstDir(meson_lib)))
+        print('+++++ meson_lib ls(%r)\n%s' % (meson_lib,spaceListDir(meson_lib)))
 else:
     meson_lib = None
 

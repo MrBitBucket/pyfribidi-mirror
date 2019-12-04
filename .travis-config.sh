@@ -1,7 +1,7 @@
 function pre_build {
 	echo "===== pre_build ls($(pwd))"
 	ls
-	cd fribidi-src
+	cd pyfribidi/fribidi-src
 	/opt/python/cp38-cp38/bin/pip install meson ninja
 	/opt/python/cp38-cp38/bin/meson -Ddocs=false --backend=ninja build
 	/opt/python/cp38-cp38/bin/ninja build test
