@@ -70,15 +70,29 @@ include_dirs = getIncludeDirs() + [pjoin(fribidi_src,"lib"),pjoin(fribidi_src,'g
 if verbose:
     print("+++++ include_dirs=%s" % spaceList(include_dirs))
 
-staticLibExt = 'lib' if sys.platform=='win32' else 'a'
 if isdir(meson_lib):
-    if sys.platform=='win32' and verbose:
-        print('+++++ meson_lib ls(%r)\n%s' % (meson_lib,spaceListDir(meson_lib)))
+    if sys.platform=='win32':
+        if verbose:
+            print('+++++ meson_lib ls(%r)\n%s' % (meson_lib,spaceListDir(meson_lib)))
+        meson_lib = pjoin(meson_lib,'fribidi.lib')
+    else:
+        meson_lib = pjoin(meson_lib,'libfribidi.a')
+
+    if not isfile(meson_lib):
+        meson_lib = None
 else:
     meson_lib = None
 
 
-lib_sources = [pjoin(fribidi_src,p) for p in """
+libraries = []
+if meson_lib:
+    extra_objects = [meson_lib]
+    lib_sources = []
+    if verbose:
+        print('+++++ using static libraries %s' % spaceList(libraries))
+else:
+    extra_objects = []
+    lib_sources = [pjoin(fribidi_src,p) for p in """
 lib/fribidi.c
 lib/fribidi-arabic.c
 lib/fribidi-bidi.c
@@ -98,7 +112,6 @@ lib/fribidi-char-sets.c
 lib/fribidi-char-sets-cp1255.c
 lib/fribidi-char-sets-iso8859-6.c
 """.split()]
-libraries = []
 
 def get_version():
     d = {}
@@ -130,4 +143,5 @@ setup(name="pyfribidi",
         sources=[pjoin(pyfribidi_src,'_pyfribidi.c')] + lib_sources,
         define_macros=define_macros,
         libraries=libraries,
+        extra_objects = extra_objects,
         include_dirs=include_dirs)])
