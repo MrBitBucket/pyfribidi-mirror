@@ -5,7 +5,7 @@ function pre_build {
 	export PATH="/opt/python/cp38-cp38/bin:$PATH"
 	pip install meson ninja
 	meson -Ddocs=false --backend=ninja build
-	ninja build test
+	ninja -C build test
 	}
 
 function run_tests {
