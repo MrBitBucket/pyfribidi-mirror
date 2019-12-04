@@ -87,7 +87,7 @@ build_script:
     #- call "%VS140COMNTOOLS%\..\..\VC\vcvarsall.bat" %ARCH%
   - cmd: if exist build c:\projects\myenv\scripts\python.exe -c"import shutils;shutils.rmtree('build',ignore_errors=True)"
   - cmd: c:\projects\myenv\scripts\meson.exe -Ddocs=false --backend=ninja --default-library=both build
-  - cmd: c:\projects\myenv\scripts\ninja.exe -C build test
+  - cmd: c:\projects\myenv\scripts\ninja.exe -C build
   - cmd: c:\projects\myenv\scripts\deactivate
   - cmd: cd c:\projects\pyfribidi
   - cmd: c:\Python%PYVER%\python.exe -mpip install -U pip setuptools wheel
