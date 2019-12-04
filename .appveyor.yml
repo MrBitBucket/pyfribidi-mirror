@@ -1,3 +1,5 @@
+os: Visual Studio 2015
+
 branches:
   only:
     - master
@@ -83,12 +85,21 @@ build_script:
   - cmd: if not exist C:\Python%PYVER%\python.exe ( echo "!!!!!!!!!!!!!!!!!!!!!!! C:\Python%PYVER%\python.exe not found" && exit 1 )
   - cmd: if not exist C:\Python%PYVER%\scripts\pip.exe ( echo "!!!!!!!!!!!!!!!!!!!!!!! C:\Python%PYVER%\scripts\pip.exe not found" && exit 1 )
   - cmd: cd c:\projects\fribidi-src
-  - cmd: c:\projects\myenv\scripts\activate
-    #- call "%VS140COMNTOOLS%\..\..\VC\vcvarsall.bat" %ARCH%
-  - cmd: if exist build c:\projects\myenv\scripts\python.exe -c"import shutils;shutils.rmtree('build',ignore_errors=True)"
-  - cmd: c:\projects\myenv\scripts\meson.exe -Ddocs=false --backend=ninja --default-library=both build
-  - cmd: c:\projects\myenv\scripts\ninja.exe -C build
-  - cmd: c:\projects\myenv\scripts\deactivate
+  - cmd: echo SETLOCAL >> doit.bat
+  - cmd: echo c:\projects\myenv\scripts\activate >> doit.bat
+  - cmd: echo call "%VS140COMNTOOLS%\..\..\VC\vcvarsall.bat" %ARCH% >> doit.bat
+  - cmd: echo if exist build c:\projects\myenv\scripts\python.exe -c"import shutils;shutils.rmtree('build',ignore_errors=True)" >> doit.bat
+  - cmd: echo c:\projects\myenv\scripts\meson.exe -Ddocs=false --backend=ninja --default-library=both build >> doit.bat
+  - cmd: echo c:\projects\myenv\scripts\ninja.exe -C build test >> doit.bat
+  - cmd: echo c:\projects\myenv\scripts\deactivate >> doit.bat
+  - cmd: echo ENDLOCAL >> doit.bat
+  - call doit.bat
+  #- cmd: c:\projects\myenv\scripts\activate
+  #- call "%VS140COMNTOOLS%\..\..\VC\vcvarsall.bat" %ARCH%
+  #- cmd: if exist build c:\projects\myenv\scripts\python.exe -c"import shutils;shutils.rmtree('build',ignore_errors=True)"
+  #- cmd: c:\projects\myenv\scripts\meson.exe -Ddocs=false --backend=ninja --default-library=both build
+  #- cmd: c:\projects\myenv\scripts\ninja.exe -C build test
+  #- cmd: c:\projects\myenv\scripts\deactivate
   - cmd: cd c:\projects\pyfribidi
   - cmd: c:\Python%PYVER%\python.exe -mpip install -U pip setuptools wheel
   - cmd: c:\Python%PYVER%\scripts\pip.exe --version
