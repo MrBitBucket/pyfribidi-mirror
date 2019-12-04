@@ -110,9 +110,12 @@ static PyObject * _pyfribidi_log2vis(PyObject * self, PyObject * args, PyObject 
 		return NULL;
 
 	/* Validate base */
-	if(!(base == FRIBIDI_TYPE_RTL
-		  || base == FRIBIDI_TYPE_LTR
-		  || base == FRIBIDI_TYPE_ON))
+	if(!(base == (FriBidiParType)FRIBIDI_TYPE_RTL
+	  || base == (FriBidiParType)FRIBIDI_TYPE_LTR
+	  || base == (FriBidiParType)FRIBIDI_TYPE_ON
+	  || base == (FriBidiParType)FRIBIDI_TYPE_WRTL
+	  || base == (FriBidiParType)FRIBIDI_TYPE_WLTR
+	  ))
 		return PyErr_Format(PyExc_ValueError, "invalid value %d: use either RTL, LTR or ON", base);
 
 
