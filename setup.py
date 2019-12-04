@@ -23,12 +23,15 @@ here = normpath(here)
 if verbose:
     print("+++++ here=%r" % (here,))
 
-def locationValueError(msg):
-    print('!!!!! %s\nls(%r)\n%s\n!!!!!''' % (msg,cwd,os.listdir(cwd)))
-    raise ValueError(msg)
-
 def spaceList(L):
     return ' '.join((repr(_) for _ in L))
+
+def spaceListDir(d):
+    return spaceList(os.listdir(d))
+
+def locationValueError(msg):
+    print('!!!!! %s\nls(%r)\n%s\n!!!!!''' % (msg,cwd,spaceListDir(cwd)))
+    raise ValueError(msg)
 
 def getFribidiSrc():
     choices = (
@@ -45,13 +48,14 @@ pyfribidi_src = pjoin(here,'src')
 if verbose:
     print("+++++ fribidi_src=%r\n+++++ pyfribidi_src=%r" % (fribidi_src,pyfribidi_src))
 
+meson_lib = pjoin(fribidi_src,'build','lib')
 def getIncludeDirs():
-    for top in ('build',None):
-        top = pjoin(fribidi_src,top) if top else top
+    for _top in ('build',None):
+        top = pjoin(fribidi_src,_top) if _top else fribidi_src
         lib = pjoin(top,'lib')
         if isfile(pjoin(top,'config.h')) and isfile(pjoin(lib,'fribidi-config.h')):
             I = [top,lib]
-            if top:
+            if _top:
                 gen = pjoin(top,'gen.tab')
                 if isfile(pjoin(gen,'fribidi-unicode-version.h')):
                     I.append(gen)
@@ -65,6 +69,14 @@ or
 include_dirs = getIncludeDirs() + [pjoin(fribidi_src,"lib"),pjoin(fribidi_src,'gen.tab'),pyfribidi_src]
 if verbose:
     print("+++++ include_dirs=%s" % spaceList(include_dirs))
+
+staticLibExt = 'lib' if sys.platform=='win32' else 'a'
+if isdir(meson_lib):
+    if sys.platform=='win32' and verbose:
+        print('+++++ meson_lib ls(%r)\n%s' % (meson_lib,spaceLstDir(meson_lib)))
+else:
+    meson_lib = None
+
 
 lib_sources = [pjoin(fribidi_src,p) for p in """
 lib/fribidi.c

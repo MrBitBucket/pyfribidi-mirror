@@ -107,7 +107,7 @@ before_install:
 - cd ..
 - git clone https://github.com/MrBitBucket/pyfribidi-mirror $REPO_DIR
 - git clone https://github.com/fribidi/fribidi $REPO_DIR/fribidi-src
-- cd $REPODIR/fribidi-src
+- cd $REPO_DIR/fribidi-src
 - git checkout 034c6e9a1d296286305f4cfd1e0072b879f52568
 - cd ../..
 - source $MULTIBUILD_DIR/common_utils.sh

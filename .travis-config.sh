@@ -1,11 +1,10 @@
 function pre_build {
 	echo "===== pre_build ls($(pwd))"
 	ls
-	echo "===== pre_build ls(/opt)"
-	ls /opt
 	cd fribidi-src
-	./autogen.sh
-	./configure
+	/opt/python/cp38-cp38/bin/pip install meson ninja
+	/opt/python/cp38-cp38/bin/meson -Ddocs=false --backend=ninja build
+	/opt/python/cp38-cp38/bin/ninja build test
 	}
 
 function run_tests {
