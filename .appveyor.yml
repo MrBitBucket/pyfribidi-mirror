@@ -86,15 +86,15 @@ build_script:
   - cmd: if not exist C:\Python%PYVER%\scripts\pip.exe ( echo "!!!!!!!!!!!!!!!!!!!!!!! C:\Python%PYVER%\scripts\pip.exe not found" && exit 1 )
   - cmd: cd c:\projects\fribidi-src
   - cmd: echo SETLOCAL >> doit.bat
-  - cmd: echo echo "ON" >> doit.bat
+  - cmd: echo echo ON >> doit.bat
   - cmd: echo c:\projects\myenv\scripts\activate >> doit.bat
   - cmd: echo call "%VS140COMNTOOLS%\..\..\VC\vcvarsall.bat" %ARCH% >> doit.bat
   - cmd: echo if exist build c:\projects\myenv\scripts\python.exe -c"import shutils;shutils.rmtree('build',ignore_errors=True)" >> doit.bat
   - cmd: echo c:\projects\myenv\scripts\meson.exe -Ddocs=false --backend=ninja --default-library=both build >> doit.bat
   - cmd: echo c:\projects\myenv\scripts\ninja.exe -C build test >> doit.bat
+  - cmd: echo c:\projects\myenv\scripts\python,exe -c"import glob;print(repr(glob.glob('c:/projects/fribidi-src/**/*.h',recursive=True)))" >> doit.bat
   - cmd: echo c:\projects\myenv\scripts\deactivate >> doit.bat
-  - cmd: echo dir /S
-  - cmd: echo echo "OFF" >> doit.bat
+  - cmd: echo echo OFF >> doit.bat
   - cmd: echo ENDLOCAL >> doit.bat
   - call doit.bat
   #- cmd: c:\projects\myenv\scripts\activate
