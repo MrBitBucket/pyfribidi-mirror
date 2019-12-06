@@ -3,13 +3,27 @@ function pre_build {
 	ls
 	(
 	cd pyfribidi/fribidi-src
-	export PATH="/opt/python/cp38-cp38/bin:$PATH"
-	pip install meson ninja
-	meson -Ddocs=false --backend=ninja build
-	ninja -C build test
+	if [ -n "$IS_OSX" ]; then
+		local opath="$PATH"
+		local opython="$PYTHON_EXE"
+		install_mac_cpython 3.8
+		MYPYTHON="$PYTHON_EXE"
+		PATH="$(dirname $MYPYTHON):$PATH"
+		$MYPYTHON -mpip install meson ninja
+		meson -Ddocs=false --backend=ninja build
+		ninja -C build test
+		PATH="$opath"
+		PYTHON_EXE="$opython"
+	else
+		export PATH="/opt/python/cp38-cp38/bin:$PATH"
+		pip install meson ninja
+		meson -Ddocs=false --backend=ninja build
+		ninja -C build test
+	fi
 	)
 	echo "+++++ pre_build end"
 	}
+
 
 function run_tests {
 	echo "+++++ run_tests start ls($(pwd))"
