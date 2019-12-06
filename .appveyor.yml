@@ -106,8 +106,8 @@ build_script:
   #- cmd: c:\projects\myenv\scripts\ninja.exe -C build test
   #- cmd: c:\projects\myenv\scripts\deactivate
   - cmd: cd c:\projects\pyfribidi
-  - cmd: curl -s https://raw.githubusercontent.com/mattn/gntp-send/master/include/msinttypes/stdint.h > fribidi-src\build\lib\stdint.h
-  - cmd: curl -s https://raw.githubusercontent.com/mattn/gntp-send/master/include/msinttypes/inttypes.h > fribidi-src\build\lib\inttypes.h
+  - cmd: curl -s https://raw.githubusercontent.com/mattn/gntp-send/master/include/msinttypes/stdint.h > c:\projects\fribidi-src\build\lib\stdint.h
+  - cmd: curl -s https://raw.githubusercontent.com/mattn/gntp-send/master/include/msinttypes/inttypes.h > c:\projects\fribidi-src\build\lib\inttypes.h
   - cmd: c:\Python%PYVER%\python.exe -mpip install -U pip setuptools wheel
   - cmd: c:\Python%PYVER%\scripts\pip.exe --version
   - cmd: c:\Python%PYVER%\python.exe -W ignore setup.py bdist_wheel
