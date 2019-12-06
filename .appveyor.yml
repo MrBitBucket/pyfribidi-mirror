@@ -88,17 +88,17 @@ build_script:
   - cmd: echo %PATH%
   - cmd: echo SETLOCAL >> doit.bat
   - cmd: echo echo ON >> doit.bat
-  - cmd: echo c:\projects\myenv\scripts\activate >> doit.bat
+  #- cmd: echo c:\projects\myenv\scripts\activate >> doit.bat
   - cmd: echo SET PATH=C:\projects\myenv;c:\projects\myenv\scripts;%PATH% >> doit.bat
   - cmd: echo call "%VS140COMNTOOLS%\..\..\VC\vcvarsall.bat" %ARCH% >> doit.bat
   - cmd: echo if exist build c:\projects\myenv\scripts\python.exe -c"import shutils;shutils.rmtree('build',ignore_errors=True)" >> doit.bat
   - cmd: echo c:\projects\myenv\scripts\meson.exe -Ddocs=false --backend=ninja --default-library=both build >> doit.bat
   - cmd: echo c:\projects\myenv\scripts\ninja.exe -C build test >> doit.bat
-  - cmd: echo c:\projects\myenv\scripts\python,exe -c"import glob;print(repr(glob.glob('c:/projects/fribidi-src/**/*.h',recursive=True)))" >> doit.bat
+  - cmd: echo c:\projects\myenv\scripts\python.exe -c"import glob;print(repr(glob.glob('c:/projects/fribidi-src/**/*.h',recursive=True)))" >> doit.bat
   - cmd: echo echo OFF >> doit.bat
   - cmd: echo ENDLOCAL >> doit.bat
   - call doit.bat
-  -  cmd: echo %PATH%
+  - cmd: echo %PATH%
   #- cmd: c:\projects\myenv\scripts\activate
   #- call "%VS140COMNTOOLS%\..\..\VC\vcvarsall.bat" %ARCH%
   #- cmd: if exist build c:\projects\myenv\scripts\python.exe -c"import shutils;shutils.rmtree('build',ignore_errors=True)"
