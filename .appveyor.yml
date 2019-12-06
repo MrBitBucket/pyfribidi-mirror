@@ -85,7 +85,7 @@ build_script:
   - cmd: if not exist C:\Python%PYVER%\python.exe ( echo "!!!!!!!!!!!!!!!!!!!!!!! C:\Python%PYVER%\python.exe not found" && exit 1 )
   - cmd: if not exist C:\Python%PYVER%\scripts\pip.exe ( echo "!!!!!!!!!!!!!!!!!!!!!!! C:\Python%PYVER%\scripts\pip.exe not found" && exit 1 )
   - cmd: cd c:\projects\fribidi-src
-    cmd: echo %PATH%
+  - cmd: echo %PATH%
   - cmd: echo SETLOCAL >> doit.bat
   - cmd: echo echo ON >> doit.bat
   - cmd: echo c:\projects\myenv\scripts\activate >> doit.bat
