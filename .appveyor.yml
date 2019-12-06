@@ -95,6 +95,7 @@ build_script:
   - cmd: echo c:\projects\myenv\scripts\meson.exe -Ddocs=false --backend=ninja --default-library=both build >> doit.bat
   - cmd: echo c:\projects\myenv\scripts\ninja.exe -C build test >> doit.bat
   - cmd: echo c:\projects\myenv\scripts\python.exe -c"import glob;print(repr(glob.glob('c:/projects/fribidi-src/**/*.h',recursive=True)))" >> doit.bat
+  - cmd: echo curl -s https://github.com/mattn/gntp-send/blob/master/include/msinttypes/stdint.h > lib\stdint.h
   - cmd: echo echo OFF >> doit.bat
   - cmd: echo ENDLOCAL >> doit.bat
   - call doit.bat
