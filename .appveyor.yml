@@ -95,7 +95,6 @@ build_script:
   - cmd: echo c:\projects\myenv\scripts\meson.exe -Ddocs=false --backend=ninja --default-library=both build >> doit.bat
   - cmd: echo c:\projects\myenv\scripts\ninja.exe -C build test >> doit.bat
   - cmd: echo c:\projects\myenv\scripts\python.exe -c"import glob;print(repr(glob.glob('c:/projects/fribidi-src/**/*.h',recursive=True)))" >> doit.bat
-  - cmd: echo curl -s https://github.com/mattn/gntp-send/blob/master/include/msinttypes/stdint.h > lib\stdint.h
   - cmd: echo echo OFF >> doit.bat
   - cmd: echo ENDLOCAL >> doit.bat
   - call doit.bat
@@ -107,6 +106,8 @@ build_script:
   #- cmd: c:\projects\myenv\scripts\ninja.exe -C build test
   #- cmd: c:\projects\myenv\scripts\deactivate
   - cmd: cd c:\projects\pyfribidi
+  - cmd: curl -s https://raw.githubusercontent.com/mattn/gntp-send/master/include/msinttypes/stdint.h > fribidi-src\build\lib\stdint.h
+  - cmd: curl -s https://raw.githubusercontent.com/mattn/gntp-send/master/include/msinttypes/inttypes.h > fribidi-src\build\lib\inttypes.h
   - cmd: c:\Python%PYVER%\python.exe -mpip install -U pip setuptools wheel
   - cmd: c:\Python%PYVER%\scripts\pip.exe --version
   - cmd: c:\Python%PYVER%\python.exe -W ignore setup.py bdist_wheel
