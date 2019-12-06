@@ -98,7 +98,7 @@ build_script:
   - cmd: echo echo OFF >> doit.bat
   - cmd: echo ENDLOCAL >> doit.bat
   - call doit.bat
-    cmd: echo %PATH%
+  -  cmd: echo %PATH%
   #- cmd: c:\projects\myenv\scripts\activate
   #- call "%VS140COMNTOOLS%\..\..\VC\vcvarsall.bat" %ARCH%
   #- cmd: if exist build c:\projects\myenv\scripts\python.exe -c"import shutils;shutils.rmtree('build',ignore_errors=True)"

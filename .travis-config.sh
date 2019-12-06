@@ -2,20 +2,18 @@ function pre_build {
 	echo "+++++ pre_build start ls($(pwd))"
 	ls
 	(
-	if [ -n "$IS_OSX" ]; then
-		local opath="$PATH"
-		local opython="$PYTHON_EXE"
+	if [ -n "$IS_OSX" -a "$MB_PYTHON_VERSION" = "2.7" ]; then
+		brew install python3
     	export CC=clang
 	    export CXX=clang++
-	    get_macpython_environment 3.8 my-venv
+	    /usr/local/bin/python3 -mvenv my-venv 
 	    source my-venv/bin/activate
 	    pip install --upgrade pip wheel
 		pip install meson ninja
 		cd pyfribidi/fribidi-src
 		meson -Ddocs=false --backend=ninja build
 		ninja -C build test
-		PATH="$opath"
-		PYTHON_EXE="$opython"
+		deactivate
 	else
 		export PATH="/opt/python/cp38-cp38/bin:$PATH"
 		cd pyfribidi/fribidi-src
@@ -24,7 +22,8 @@ function pre_build {
 		ninja -C build test
 	fi
 	)
-	echo "+++++ pre_build end"
+	echo "+++++ pre_build end ls($(pwd))"
+	ls
 	}
 
 
