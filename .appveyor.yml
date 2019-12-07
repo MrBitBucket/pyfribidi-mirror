@@ -129,7 +129,8 @@ test_script:
   - c:\projects\testenv\scripts\pip.exe install --cache-dir=dist --find-links file:dist --pre pyfribidi
   #- c:\projects\myenv\scripts\python.exe -mrl_ci_tools info --recur c:\projects\testenv\Lib\site-packages
   #- c:\projects\myenv\scripts\python.exe -mrl_ci_tools info --recur c:\projects\testenv\Lib\site-packages\reportlab\fonts
-  - c:\projects\testenv\Scripts\python.exe src\test_pyfribidi.py
+  - c:\projects\testenv\Scripts\python.exe -c"import _pyfribidi" || (exit 0)
+  - c:\projects\testenv\Scripts\python.exe src\test_pyfribidi.py || (exit 0)
   - echo "=============================== Python%PYVER% TEST END"
 
 #artifacts:
