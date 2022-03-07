@@ -2,7 +2,7 @@ try:
     from setuptools import setup, Extension
 except ImportError:
     from distutils.core import setup, Extension
-import sys,os
+import sys,os,glob
 
 pjoin=os.path.join
 normpath = os.path.normpath
@@ -43,6 +43,25 @@ def get_version():
     return d["__version__"]
 pyFribidiVersion=get_version()
 
+def include_dirs():
+    n = 0
+    for d in ('/usr/local/include', '/usr/include'):
+        dfi = pjoin(d,'fribidi')
+        if os.path.isdir(dfi):
+            yield dfi
+            n += 1
+    if not n:
+        raise ValueError('could not find includes for fribidi')
+
+def lib_dirs():
+    n = 0
+    for d in ('/usr/local/lib', '/usr/lib'):
+        if glob.glob(pjoin(d,'libfribidi.*')):
+            yield d
+            n += 1
+    if not n:
+        raise ValueError('could not find dynamic library for fribidi')
+
 setup(name="pyfribidi",
     version=pyFribidiVersion,
     description="Python libfribidi interface",
@@ -58,9 +77,10 @@ setup(name="pyfribidi",
             name='_pyfribidi',
             sources=[pjoin(pyfribidi_src,'_pyfribidi.c')],
             define_macros=[('PYFRIBIDI_VERSION',pyFribidiVersion)],
+            library_dirs = list(lib_dirs()),
             libraries=['fribidi'],
             extra_objects = [],
-            include_dirs=['/usr/include/fribidi']
+            include_dirs = list(include_dirs())
             ),
         ],
       )
