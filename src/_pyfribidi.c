@@ -17,12 +17,15 @@
 /* Copyright (C) 2005,2006,2010 Yaacov Zamir, Nir Soffer */
 
 #include <Python.h>
+#define __STR(x) #x
+#define STRINGIFY(x) __STR(x)
+#ifndef PYFRIBIDI_VERSION
+#	define PYFRIBIDI_VERSION ?.?.?
+#endif
 #if PY_MAJOR_VERSION >= 3
 #	define isPy3
 #endif
 #include <fribidi.h>
-
-#include <pyfribidi_version.h>
 
 #ifdef isPy3
 #	define CMODNAME PyInit__pyfribidi
@@ -154,7 +157,7 @@ PyMODINIT_FUNC CMODNAME(void){
 		||	PyModule_AddIntConstant(module, "ON", (long)FRIBIDI_TYPE_ON)
 		||	PyModule_AddIntConstant(module, "WLTR", (long)FRIBIDI_PAR_WLTR)
 		||	PyModule_AddIntConstant(module, "WRTL", (long)FRIBIDI_PAR_WRTL)
-		||	PyModule_AddStringConstant(module, "pyFribidiVersion", (const char *)PYFRIBIDI_VERSION)
+		||	PyModule_AddStringConstant(module, "pyFribidiVersion", (const char *)STRINGIFY(PYFRIBIDI_VERSION))
 		||	PyModule_AddStringConstant(module, "fribidiVersion", (const char *)FRIBIDI_VERSION)
 		||	PyModule_AddStringConstant(module, "fribidiInterfaceVersion", (const char *)FRIBIDI_INTERFACE_VERSION_STRING)
 		||	PyModule_AddStringConstant(module, "fribidiUnicodeVersion", (const char *)FRIBIDI_UNICODE_VERSION)
