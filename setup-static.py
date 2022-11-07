@@ -34,10 +34,10 @@ def locationValueError(msg):
     raise ValueError(msg)
 
 def getFribidiSrc():
-    choices = (
-            normpath(pjoin(here,'..','fribidi-src')),
-            pjoin(here,'fribidi-src'),
-            )
+    choices = tuple((
+                normpath(pjoin(d,_)) for d in (pjoin(here,'..'),here)
+                                     for _ in ('fribidi','fribidi-src')
+                ))
     for d in choices:
         if isdir(d) and isfile(pjoin(d,'lib','fribidi-common.h')):
             return d
