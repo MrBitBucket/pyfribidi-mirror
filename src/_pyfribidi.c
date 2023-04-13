@@ -17,6 +17,7 @@
 /* Copyright (C) 2005,2006,2010 Yaacov Zamir, Nir Soffer */
 
 #include <Python.h>
+#include "pyfribidi_version.h"
 #define __STR(x) #x
 #define STRINGIFY(x) __STR(x)
 #ifndef PYFRIBIDI_VERSION

@@ -114,17 +114,19 @@ lib/fribidi-char-sets-iso8859-6.c
 """.split()]
 
 def get_version():
-    d = {}
     try:
         with open(pjoin(pyfribidi_src,"pyfribidi.py"),"r") as f:
-            exec(f.read(), d, d)
+            for line in f.readlines():
+                line = line.strip()
+                if line.startswith('__version__'):
+                    return eval(line.split('=')[1].strip(),{})
     except (ImportError, RuntimeError):
         pass
-    return d["__version__"]
+    return '?.?.?'
 
 pyFribidiVersion=get_version()
 with open(pjoin(pyfribidi_src,"pyfribidi_version.h"),'w') as f:
-    f.write('#define PYFRIBIDI_VERSION "%s"\n' % pyFribidiVersion)
+    f.write('#define PYFRIBIDI_VERSION %s\n' % pyFribidiVersion)
 
 define_macros = [("HAVE_CONFIG_H", 1)]
 
