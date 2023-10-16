@@ -1,4 +1,3 @@
-import distutils
 try:
     from setuptools import setup, Extension
 except ImportError:
