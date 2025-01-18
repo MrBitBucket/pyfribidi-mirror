@@ -60,7 +60,7 @@ def getIncludeDirs():
                     I.append(gen)
                 return I
     locationValueError('''Cannot locate a suitable config.h file.
-    meson -Ddocs=false --backend=ninja build
+    meson setup -Ddocs=false --backend=ninja build
     ninja -C build test
 or
     ./autogen.sh
