@@ -129,20 +129,27 @@ with open(pjoin(pyfribidi_src,"pyfribidi_version.h"),'w') as f:
 
 define_macros = [("HAVE_CONFIG_H", 1)]
 
-setup(name="pyfribidi",
-  version=pyFribidiVersion,
-  description="Python libfribidi interface",
-  author="Yaacov Zamir, Nir Soffer, Robin Becker",
-  author_email="kzamir@walla.co.il",
-  url="https://github.com/pediapress/pyfribidi",
-  license="GPL",
-  long_description=open("README.rst").read(),
-  package_dir = {'':pyfribidi_src},
-  py_modules=["pyfribidi", "pyfribidi2"],
-  ext_modules=[Extension(
-        name='_pyfribidi',
-        sources=[pjoin(pyfribidi_src,'_pyfribidi.c')] + lib_sources,
-        define_macros=define_macros,
-        libraries=libraries,
-        extra_objects = extra_objects,
-        include_dirs=include_dirs)])
+setup(
+    name="pyfribidi",
+    version=pyFribidiVersion,
+    description="Python libfribidi interface",
+    author="Yaacov Zamir, Nir Soffer, Robin Becker",
+    author_email="kzamir@walla.co.il",
+    url="https://github.com/pediapress/pyfribidi",
+    license="GPL",
+    long_description=open("README.rst").read(),
+    package_dir = {'':pyfribidi_src},
+    py_modules=["pyfribidi", "pyfribidi2"],
+    ext_modules=[
+        Extension(
+            name='_pyfribidi',
+            sources=[pjoin(pyfribidi_src,'_pyfribidi.c')] + lib_sources,
+            define_macros=define_macros,
+            libraries=libraries,
+            extra_objects = extra_objects,
+            include_dirs=include_dirs,
+            ),
+        ],
+    python_requires='>=3.8,<4',
+    extras_require={},
+)

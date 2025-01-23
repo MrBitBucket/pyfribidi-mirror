@@ -21,37 +21,22 @@
 #define __STR(x) #x
 #define STRINGIFY(x) __STR(x)
 #ifndef PYFRIBIDI_VERSION
-#	define PYFRIBIDI_VERSION ?.?.?
+#	define PYFRIBIDI_VERSION "?.?.?"
 #endif
-#if PY_MAJOR_VERSION >= 3
-#	define isPy3
+#if PY_MAJOR_VERSION < 3
+#	error "pyfribidi " PYFRIBIDI_VERSION " needs python 3"
 #endif
 #include <fribidi.h>
-
-#ifdef isPy3
-#	define CMODNAME PyInit__pyfribidi
-#	define PYUNICODE_GET_LENGTH PyUnicode_GET_LENGTH
-#else
-#	define CMODNAME init_pyfribidi
-#	define PYUNICODE_GET_LENGTH PyUnicode_GET_SIZE
-#endif
 
 static PyObject *unicode_log2vis(PyUnicodeObject* u,
 								FriBidiParType base_direction,
 								int clean, int reordernsm){
-	Py_ssize_t length = PYUNICODE_GET_LENGTH(u), i;
+	Py_ssize_t length = PyUnicode_GET_LENGTH(u), i;
 	FriBidiChar *logical = NULL;	/* input fribidi unicode buffer */
 	FriBidiChar *visual = NULL;		/* output fribidi unicode buffer */
-#ifdef isPy3
 	void *data = NULL;
 	int	kind;
-#	define READ(i) PyUnicode_READ(kind,data,i) 
-#	define RESULT_TYPE PyObject
-#else
-#	define READ(i) u->str[i]
-#	define RESULT_TYPE PyUnicodeObject
-#endif
-	RESULT_TYPE *result = NULL;
+	PyObject *result = NULL;
 
 	/* Allocate fribidi unicode buffers
 	   TODO - Don't copy strings if sizeof(FriBidiChar) == sizeof(Py_UNICODE)
@@ -66,13 +51,11 @@ static PyObject *unicode_log2vis(PyUnicodeObject* u,
 		goto cleanup;
 		}
 
-#ifdef isPy3
 	if(PyUnicode_READY(u)) goto cleanup;
 	data = PyUnicode_DATA(u);
 	kind = PyUnicode_KIND(u);
-#endif
 	for(i=0; i<length; ++i){
-		logical[i] = READ(i);
+		logical[i] = PyUnicode_READ(kind,data,i);
 		}
 
 	/* Convert to unicode and order visually */
@@ -85,14 +68,7 @@ static PyObject *unicode_log2vis(PyUnicodeObject* u,
 
 	/* Cleanup the string if requested */
 	if(clean) length = fribidi_remove_bidi_marks(visual, (const FriBidiStrIndex)length, NULL, NULL, NULL);
-#ifdef isPy3
 	result = PyUnicode_FromKindAndData(PyUnicode_4BYTE_KIND,(void*)visual, length);
-#else
-	if(!(result=(PyUnicodeObject*)PyUnicode_FromUnicode(NULL, length))) goto cleanup;
-	for(i=0; i<length; ++i){
-		result->str[i] = visual[i];
-		}
-#endif
 
 cleanup:
 	/* Delete unicode buffers */
@@ -131,7 +107,6 @@ static PyMethodDef PyfribidiMethods[] = {
 	{NULL, NULL, 0, NULL}
 	};
 
-#ifdef isPy3
 static struct PyModuleDef moduledef={
 	PyModuleDef_HEAD_INIT,
 	"_pyfribidi",
@@ -143,15 +118,10 @@ static struct PyModuleDef moduledef={
 	NULL,
 	NULL
 	};
-#endif
 
-PyMODINIT_FUNC CMODNAME(void){
+PyMODINIT_FUNC PyInit__pyfribidi(void){
 	PyObject *module=NULL;
-#ifdef isPy3
 	module = PyModule_Create(&moduledef);
-#else
-	module = Py_InitModule("_pyfribidi", PyfribidiMethods);
-#endif
 	if(!module) goto err;
 	if(		PyModule_AddIntConstant(module, "RTL", (long)FRIBIDI_TYPE_RTL)
 		||	PyModule_AddIntConstant(module, "LTR", (long)FRIBIDI_TYPE_LTR)
@@ -164,16 +134,8 @@ PyMODINIT_FUNC CMODNAME(void){
 		||	PyModule_AddStringConstant(module, "fribidiUnicodeVersion", (const char *)FRIBIDI_UNICODE_VERSION)
 		)
 		goto err;
-#ifdef isPy3
 	return module;
-#else
-	return;
-#endif
 err:/*Check for errors*/
-#ifdef isPy3
 	Py_XDECREF(module);
 	return NULL;
-#else
-	if(PyErr_Occurred())Py_FatalError("can't initialize module _pyfribidi");
-#endif
 	}
