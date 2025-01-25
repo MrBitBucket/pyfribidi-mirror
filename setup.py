@@ -1,8 +1,8 @@
 try:
-    from setuptools import setup, Extension
+    from setuptools import setup, Extension, find_packages
 except ImportError:
     from distutils.core import setup, Extension
-import sys,os
+import sys, os, subprocess, shutil
 
 pjoin=os.path.join
 normpath = os.path.normpath
@@ -22,28 +22,51 @@ here = normpath(here)
 if verbose:
     print("+++++ here=%r" % (here,))
 
-def spaceList(L):
-    return ' '.join((repr(_) for _ in L))
+def lineList(L):
+    return '\n     '+('\n     '.join((repr(_) for _ in L)))
 
-def spaceListDir(d):
-    return spaceList(os.listdir(d))
+def lineListDir(d):
+    return lineList(os.listdir(d))
 
 def locationValueError(msg):
-    print('!!!!! %s\nls(%r)\n%s\n!!!!!''' % (msg,cwd,spaceListDir(cwd)))
+    print('!!!!! %s\nls(%r)\n%s\n!!!!!''' % (msg,cwd,lineListDir(cwd)))
     raise ValueError(msg)
 
+def sprun(args):
+    print(f'##### about to execute\n  {" ".join(args)}')
+    try:
+        subprocess.run(args)
+    except:
+        t,e,b = sys.exc_info()
+        print(f'!!!!! {args[0]} raised {e}')
+        raise
+
 def getFribidiSrc():
-    choices = tuple((
-                normpath(pjoin(d,_)) for d in (pjoin(here,'..'),here)
-                                     for _ in ('fribidi','fribidi-src')
-                ))
-    for d in choices:
-        if isdir(d) and isfile(pjoin(d,'lib','fribidi-common.h')):
-            return d
-    locationValueError('Cannot locate fribidi-src directory from %s' % spaceList(choices))
+    print(f'##### attempting git clone an meson/ninja build in {here}')
+    try:
+        target = 'fribidi-src'
+        if os.path.isdir(target):
+            shutil.rmtree(target)
+            print(f'##### removed existing directory {target!r}')
+        from dulwich import porcelain
+        porcelain.clone("https://github.com/fribidi/fribidi", target, refspecs=[b'cfc71cda065db859d8b4f1e3c6fe5da7ab02469a'])
+        cwd = os.getcwd()
+        os.chdir(target)
+        try:
+            sprun(['meson','setup','-Ddocs=false','--backend=ninja','build'])
+            sprun(['ninja','-C','build','test'])
+        finally:
+            os.chdir(cwd)
+    except:
+        t,e,b = sys.exc_info()
+        print(f'!!!!! clone and build commands failed with {e}')
+        choices = choices + ('https://github.com/fribidi/fribidi',)
+    else:
+        return target
+    locationValueError('Cannot locate or obtain fribidi-src directory from %s' % lineList(choices))
 
 fribidi_src = getFribidiSrc()
-pyfribidi_src = pjoin(here,'src')
+pyfribidi_src = 'src'
 if verbose:
     print("+++++ fribidi_src=%r\n+++++ pyfribidi_src=%r" % (fribidi_src,pyfribidi_src))
 
@@ -67,12 +90,12 @@ or
     ./configure''')
 include_dirs = getIncludeDirs() + [pjoin(fribidi_src,"lib"),pjoin(fribidi_src,'gen.tab'),pyfribidi_src]
 if verbose:
-    print("+++++ include_dirs=%s" % spaceList(include_dirs))
+    print("+++++ include_dirs=%s" % lineList(include_dirs))
 
 if isdir(meson_lib):
     if sys.platform=='win32':
         if verbose:
-            print('+++++ meson_lib ls(%r)\n%s' % (meson_lib,spaceListDir(meson_lib)))
+            print('+++++ meson_lib ls(%r)\n%s' % (meson_lib,lineListDir(meson_lib)))
         meson_lib = pjoin(meson_lib,'fribidi.lib')
     else:
         meson_lib = pjoin(meson_lib,'libfribidi.a')
@@ -88,7 +111,7 @@ if meson_lib:
     extra_objects = [meson_lib]
     lib_sources = []
     if verbose:
-        print('+++++ using static libraries %s' % spaceList(libraries))
+        print('+++++ using static libraries %s' % lineList(libraries))
 else:
     extra_objects = []
     lib_sources = [pjoin(fribidi_src,p) for p in """
@@ -113,43 +136,33 @@ lib/fribidi-char-sets-iso8859-6.c
 """.split()]
 
 def get_version():
-    try:
-        with open(pjoin(pyfribidi_src,"pyfribidi.py"),"r") as f:
-            for line in f.readlines():
-                line = line.strip()
-                if line.startswith('__version__'):
-                    return eval(line.split('=')[1].strip(),{})
-    except (ImportError, RuntimeError):
-        pass
-    return '?.?.?'
+    with open(pjoin("src","pyfribidi","__init__.py"),"r") as f:
+        for line in f.readlines():
+            line = line.strip()
+            if line.startswith('__version__'):
+                version = eval(line.split('=')[1].strip(),{})
 
-pyFribidiVersion=get_version()
-with open(pjoin(pyfribidi_src,"pyfribidi_version.h"),'w') as f:
-    f.write('#define PYFRIBIDI_VERSION %s\n' % pyFribidiVersion)
+    with open(pjoin("src","pyfribidi_version.h"),'w') as f:
+        f.write('#define PYFRIBIDI_VERSION %s\n' % version)
+
+    return version
 
 define_macros = [("HAVE_CONFIG_H", 1)]
 
 setup(
-    name="pyfribidi",
-    version=pyFribidiVersion,
-    description="Python libfribidi interface",
-    author="Yaacov Zamir, Nir Soffer, Robin Becker",
-    author_email="kzamir@walla.co.il",
-    url="https://github.com/pediapress/pyfribidi",
-    license="GPL",
+    version=get_version(),
     long_description=open("README.rst").read(),
-    package_dir = {'':pyfribidi_src},
-    py_modules=["pyfribidi", "pyfribidi2"],
+    packages = find_packages("src"),
+    package_dir = {'': "src"},
     ext_modules=[
         Extension(
-            name='_pyfribidi',
-            sources=[pjoin(pyfribidi_src,'_pyfribidi.c')] + lib_sources,
+            name='pyfribidi._pyfribidi',
+            sources=[pjoin("src",'_pyfribidi.c')] + lib_sources,
             define_macros=define_macros,
             libraries=libraries,
             extra_objects = extra_objects,
             include_dirs=include_dirs,
             ),
         ],
-    python_requires='>=3.8,<4',
     extras_require={},
 )

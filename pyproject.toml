@@ -1,0 +1,19 @@
+[build-system]
+requires = ["setuptools","meson","ninja","dulwich","build"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name="pyproject"
+description="Python libfribidi interface"
+license={text="GPL-2.0-only"}
+dynamic=["version"]
+authors=[
+		{name="Yaacov Zamir", email="kzamir@walla.co.il"},
+		{name="Nir Soffer"},
+		{name="Robin Becker", email="robin@reportlab.com"},
+		]
+requires-python=">=3.8,<4"
+readme = "README.rst"
+
+[project.urls]
+	reporitory = "https://github.com/pediapress/pyfribidi"

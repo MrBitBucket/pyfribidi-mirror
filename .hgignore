@@ -48,3 +48,4 @@ syntax: regexp
 ^src/pyfribidi_version.h$
 ^tmp$
 ^devel$
+^src/pyproject.egg-info/

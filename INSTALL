@@ -18,21 +18,10 @@ build the extension module using
 
 
 linux build
-1) #ensure we have ninja
-   ninja --version
+===========
+We don't use setup.py we now have pyproject.toml
 
-2) pip install meson
+pip wheel -w dist .
 
-3) clone fribidi parallel to pyfribidi
-   git clone https://github.com/fribidi/fribidi
-
-4) cd fribidi
-   meson build --default-library=static -Ddocs=false --backend=ninja
-   cd build
-   meson compile
-
-5) static libraries should be in fribidi/build/lib
-
-6) cd to the pyfribidi directory and build/install your package
-   cd ../pyfribidi
-   python setup.py build or python setup.py bdist_wheel
+hg up -C
+pip -m build --sdist

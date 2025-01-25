@@ -11,7 +11,7 @@ isPy3 = sys.version_info[0]==3
 if isPy3:
     unicode = str
 
-from _pyfribidi import LTR, ON, RTL, WLTR, WRTL, pyFribidiVersion, fribidiVersion, fribidiInterfaceVersion, fribidiUnicodeVersion, log2vis as _log2vis
+from . _pyfribidi import LTR, ON, RTL, WLTR, WRTL, pyFribidiVersion, fribidiVersion, fribidiInterfaceVersion, fribidiUnicodeVersion, log2vis as _log2vis
 assert __version__==pyFribidiVersion, "Non matching version pyfribidi=%s!= _pyfribidi=%s" % (__version__,pyFribidiVersion)
 
 def log2vis(logical, base_direction=RTL, encoding="utf-8", clean=False, reordernsm=True):
