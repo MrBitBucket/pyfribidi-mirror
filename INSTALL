@@ -14,14 +14,13 @@ file containing messages from the script.
 
 5) Assuming 4 worked you now have a configured fribidi source area.
 build the extension module using
-    python setup.py build
+	python setup.py build
 
 
 linux build
 ===========
 We don't use setup.py we now have pyproject.toml
 
+hg purge --all
+python setup.py sdist
 pip wheel -w dist .
-
-hg up -C
-pip -m build --sdist

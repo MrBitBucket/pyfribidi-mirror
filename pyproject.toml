@@ -1,5 +1,5 @@
 [build-system]
-requires = ["setuptools","meson","ninja","dulwich","build"]
+requires = ["setuptools","meson","ninja","dulwich"]
 build-backend = "setuptools.build_meta"
 
 [project]
