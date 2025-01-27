@@ -28,10 +28,12 @@ def lineList(L):
 def lineListDir(d):
     return lineList(os.listdir(d))
 
-if sys.argv[0]=='setup.py':
+if sys.argv[0]=='setup.py' and sys.argv[1]=='sdist':
     ext_modules=[]
     data_files = [pjoin("src","_pyfribidi.c")]
+    install_requires = ["meson","ninja","dulwich"]
 else:
+    install_requires = ["setuptools","meson","ninja","dulwich"]
     data_files = None
     def locationValueError(msg):
         print('!!!!! %s\nls(%r)\n%s\n!!!!!''' % (msg,cwd,lineListDir(cwd)))
@@ -165,10 +167,11 @@ def get_version():
 
 setup(
     version=get_version(),
-    ext_modules=ext_modules,
-    long_description=open("README.rst").read(),
+    ext_modules = ext_modules,
+    long_description = open("README.rst").read(),
     packages = find_packages("src"),
     package_dir = {'': "src"},
     data_files = data_files,
+    install_requires = install_requires,
     extras_require={},
 )

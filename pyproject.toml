@@ -6,7 +6,7 @@ build-backend = "setuptools.build_meta"
 name="pyproject"
 description="Python libfribidi interface"
 license={text="GPL-2.0-only"}
-dynamic=["version"]
+dynamic=["version","dependencies"]
 authors=[
 		{name="Yaacov Zamir", email="kzamir@walla.co.il"},
 		{name="Nir Soffer"},
