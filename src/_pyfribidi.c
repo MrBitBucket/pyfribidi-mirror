@@ -27,15 +27,22 @@
 #	error "pyfribidi " PYFRIBIDI_VERSION " needs python 3"
 #endif
 #include <fribidi.h>
+#ifdef Py_LIMITED_API
+#	define RLPYUNICODE_GETLENGTH(u) PyUnicode_GetLength(u)
+#else
+#	define RLPYUNICODE_GETLENGTH(u) PyUnicode_GET_LENGTH(u)
+#endif
 
-static PyObject *unicode_log2vis(PyUnicodeObject* u,
+static PyObject *unicode_log2vis(PyObject* u,
 								FriBidiParType base_direction,
 								int clean, int reordernsm){
-	Py_ssize_t length = PyUnicode_GET_LENGTH(u), i;
+	Py_ssize_t length = RLPYUNICODE_GETLENGTH(u), i;
 	FriBidiChar *logical = NULL;	/* input fribidi unicode buffer */
 	FriBidiChar *visual = NULL;		/* output fribidi unicode buffer */
+#ifndef Py_LIMITED_API
 	void *data = NULL;
 	int	kind;
+#endif
 	PyObject *result = NULL;
 
 	/* Allocate fribidi unicode buffers
@@ -51,12 +58,18 @@ static PyObject *unicode_log2vis(PyUnicodeObject* u,
 		goto cleanup;
 		}
 
+#ifdef Py_LIMITED_API
+	for(i=0; i<length; ++i){
+		logical[i] = PyUnicode_ReadChar(u,i);
+		}
+#else
 	if(PyUnicode_READY(u)) goto cleanup;
 	data = PyUnicode_DATA(u);
 	kind = PyUnicode_KIND(u);
 	for(i=0; i<length; ++i){
 		logical[i] = PyUnicode_READ(kind,data,i);
 		}
+#endif
 
 	/* Convert to unicode and order visually */
 	fribidi_set_reorder_nsm(reordernsm);
@@ -68,7 +81,11 @@ static PyObject *unicode_log2vis(PyUnicodeObject* u,
 
 	/* Cleanup the string if requested */
 	if(clean) length = fribidi_remove_bidi_marks(visual, (const FriBidiStrIndex)length, NULL, NULL, NULL);
+#ifdef Py_LIMITED_API
+	result = PyUnicode_DecodeUTF32((const char *)visual, length*4, "strict", NULL);
+#else
 	result = PyUnicode_FromKindAndData(PyUnicode_4BYTE_KIND,(void*)visual, length);
+#endif
 
 cleanup:
 	/* Delete unicode buffers */
@@ -79,7 +96,7 @@ cleanup:
 	}
 
 static PyObject * _pyfribidi_log2vis(PyObject * self, PyObject * args, PyObject * kw){
-	PyUnicodeObject *logical=NULL;	/* input unicode or string object */
+	PyObject *logical=NULL;	/* input unicode or string object */
 	FriBidiParType base = FRIBIDI_TYPE_RTL;	/* optional direction */
 	int clean = 0; /* optional flag to clean the string */
 	int reordernsm = 1; /* optional flag to allow reordering of non spacing marks*/

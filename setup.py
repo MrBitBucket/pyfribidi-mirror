@@ -1,7 +1,4 @@
-try:
-    from setuptools import setup, Extension, find_packages
-except ImportError:
-    from distutils.core import setup, Extension
+from setuptools import setup, Extension, find_packages
 import sys, os, subprocess, shutil
 
 pjoin=os.path.join
@@ -10,31 +7,69 @@ isfile = os.path.isfile
 isdir = os.path.isdir
 verbose=int(os.environ.get("SETUP_VERBOSE","0"))
 
-here = os.path.dirname(sys.argv[0])
-cwd = os.getcwd()
-if verbose:
-    print("+++++ sys.argv=%r dirname=%r cwd=%r" % (sys.argv,here,cwd))
-
-if not here:
-    here = cwd
-
-here = normpath(here)
-if verbose:
-    print("+++++ here=%r" % (here,))
-
 def lineList(L):
     return '\n     '+('\n     '.join((repr(_) for _ in L)))
 
 def lineListDir(d):
     return lineList(os.listdir(d))
 
-if sys.argv[0]=='setup.py' and sys.argv[1]=='sdist':
-    ext_modules=[]
+cmdclass={}
+install_requires = []
+ext_modules=[]
+data_files = []
+setup_py = sys.argv[0]=='setup.py'
+if setup_py and 'help' in sys.argv:
+    print('''Run
+    python setup.py help  to give this help
+    python setup.py sdist to make a source distro
+    pip wheel -w dist . [-v] to make a wheel
+    #python setup.py test  to run tests
+''')
+    sys.exit(0)
+elif setup_py and 'sdist' in sys.argv:
     data_files = [pjoin("src","_pyfribidi.c")]
-    install_requires = ["meson","ninja","dulwich"]
 else:
-    install_requires = ["setuptools","meson","ninja","dulwich"]
-    data_files = None
+    py_limited_kwds = {}
+    if int(os.environ.get('LIMITED_ABI','0'))>=1:
+        #+++++++++++++++++++++++++ start limited C api support
+        try:
+            from setuptools.command.bdist_wheel import bdist_wheel, get_abi_tag
+        except ImportError:
+            try:
+                from wheel.bdist_wheel import bdist_wheel, get_abi_tag
+            except ImportError:
+                from wheel._bdist_wheel import bdist_wheel, get_abi_tag
+        def make_la_info():
+            '''compute limited api and abi info'''
+            global py_limited_kwds, cpstr
+            cpstr = get_abi_tag()
+            if cpstr.startswith("cp"):
+                lav = '0x03080000'
+                cpstr = 'cp38'
+                if sys.platform == "darwin":
+                    machine = sysconfig.get_platform().split('-')[-1]
+                    if machine=='arm64' or os.environ.get('ARCHFLAGS','')=='-arch arm64':
+                        #according to cibuildwheel/github M1 supports pythons >= 3.8
+                        lav = '0x03080000'
+                        cpstr = 'cp38'
+                py_limited_kwds = dict(
+                                        define_macros=[("Py_LIMITED_API", lav)],
+                                        py_limited_api=True,
+                                        )
+
+        make_la_info()
+
+        class bdist_wheel_abi3(bdist_wheel):
+            def get_tag(self):
+                python, abi, plat = super().get_tag()
+
+                if python.startswith("cp"):
+                    abi = 'abi3'
+                    python = cpstr
+                return python,abi,plat
+        cmdclass={"bdist_wheel": bdist_wheel_abi3}
+    #------------------------- end   limited C api support
+
     def locationValueError(msg):
         print('!!!!! %s\nls(%r)\n%s\n!!!!!''' % (msg,cwd,lineListDir(cwd)))
         raise ValueError(msg)
@@ -48,22 +83,32 @@ else:
             print(f'!!!!! {args[0]} raised {e}')
             raise
 
+    def setupFribidiSrc(target):
+        from dulwich import porcelain
+        install_requires.extend(['dulwich','meson','ninja'])
+        porcelain.clone("https://github.com/fribidi/fribidi", target,
+                  refspecs=[b'cfc71cda065db859d8b4f1e3c6fe5da7ab02469a'])
+        cwd = os.getcwd()
+        os.chdir(target)
+        try:
+            sprun(['meson','setup','-Ddocs=false','--backend=ninja','build'])
+            sprun(['ninja','-C','build','test'])
+        finally:
+            os.chdir(cwd)
+
     def getFribidiSrc():
-        print(f'##### attempting git clone an meson/ninja build in {here}')
+        print(f'##### attempting git clone an meson/ninja build in {os.getcwd()}')
         try:
             target = 'fribidi-src'
             if os.path.isdir(target):
-                shutil.rmtree(target)
-                print(f'##### removed existing directory {target!r}')
-            from dulwich import porcelain
-            porcelain.clone("https://github.com/fribidi/fribidi", target, refspecs=[b'cfc71cda065db859d8b4f1e3c6fe5da7ab02469a'])
-            cwd = os.getcwd()
-            os.chdir(target)
-            try:
-                sprun(['meson','setup','-Ddocs=false','--backend=ninja','build'])
-                sprun(['ninja','-C','build','test'])
-            finally:
-                os.chdir(cwd)
+                if int(os.environ.get('CLEAN_FRIBIDI','0'))>=1:
+                    shutil.rmtree(target)
+                    print(f'##### removed existing directory {target!r}')
+                    setupFribidiSrc(target)
+                else:
+                    print(f'##### using existing directory {target!r}')
+            else:
+                setupFribidiSrc(target)
         except:
             t,e,b = sys.exc_info()
             print(f'!!!!! clone and build commands failed with {e}')
@@ -140,7 +185,7 @@ else:
     lib/fribidi-char-sets-cp1255.c
     lib/fribidi-char-sets-iso8859-6.c
     """.split()]
-    define_macros = [("HAVE_CONFIG_H", 1)]
+    define_macros = [("HAVE_CONFIG_H", 1)] + py_limited_kwds.pop('define_macros',[])
     ext_modules=[
         Extension(
             name='pyfribidi._pyfribidi',
@@ -149,6 +194,7 @@ else:
             libraries=libraries,
             extra_objects = extra_objects,
             include_dirs=include_dirs,
+            **py_limited_kwds,
             ),
         ]
 
@@ -174,4 +220,5 @@ setup(
     data_files = data_files,
     install_requires = install_requires,
     extras_require={},
+    cmdclass = cmdclass,
 )
