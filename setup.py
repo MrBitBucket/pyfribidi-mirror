@@ -2,10 +2,12 @@ from setuptools import setup, Extension, find_packages
 import sys, os, subprocess, shutil
 
 pjoin=os.path.join
+dirname=os.path.dirname
 normpath = os.path.normpath
 isfile = os.path.isfile
 isdir = os.path.isdir
 verbose=int(os.environ.get("SETUP_VERBOSE","0"))
+limited_abi = int(os.environ.get('LIMITED_ABI','38'))
 
 def lineList(L):
     return '\n     '+('\n     '.join((repr(_) for _ in L)))
@@ -19,18 +21,25 @@ ext_modules=[]
 data_files = []
 setup_py = sys.argv[0]=='setup.py'
 if setup_py and 'help' in sys.argv:
-    print('''Run
+    print('''
+    python setup.py clean remove fribidi-src, build & dist
     python setup.py help  to give this help
     python setup.py sdist to make a source distro
     pip wheel -w dist . [-v] to make a wheel
-    #python setup.py test  to run tests
 ''')
+    sys.exit(0)
+elif setup_py and 'clean' in sys.argv:
+    for d in 'fribidi-src build dist'.split():
+        d = pjoin(dirname(__file__),d)
+        if isdir(d):
+            if verbose: print(f'##### shutil.rmtree({d!r})')
+            shutil.rmtree(d)
     sys.exit(0)
 elif setup_py and 'sdist' in sys.argv:
     data_files = [pjoin("src","_pyfribidi.c")]
 else:
     py_limited_kwds = {}
-    if int(os.environ.get('LIMITED_ABI','0'))>=1:
+    if limited_abi:
         #+++++++++++++++++++++++++ start limited C api support
         try:
             from setuptools.command.bdist_wheel import bdist_wheel, get_abi_tag
@@ -45,13 +54,13 @@ else:
             cpstr = get_abi_tag()
             if cpstr.startswith("cp"):
                 lav = '0x03080000'
-                cpstr = 'cp38'
+                cpstr = f'cp{limited_abi}'
                 if sys.platform == "darwin":
                     machine = sysconfig.get_platform().split('-')[-1]
                     if machine=='arm64' or os.environ.get('ARCHFLAGS','')=='-arch arm64':
                         #according to cibuildwheel/github M1 supports pythons >= 3.8
                         lav = '0x03080000'
-                        cpstr = 'cp38'
+                        cpstr = f'cp{max(limited_abi,38)}'
                 py_limited_kwds = dict(
                                         define_macros=[("Py_LIMITED_API", lav)],
                                         py_limited_api=True,
@@ -166,25 +175,25 @@ else:
     else:
         extra_objects = []
         lib_sources = [pjoin(fribidi_src,p) for p in """
-    lib/fribidi.c
-    lib/fribidi-arabic.c
-    lib/fribidi-bidi.c
-    lib/fribidi-bidi-types.c
-    lib/fribidi-brackets.c
-    lib/fribidi-deprecated.c
-    lib/fribidi-joining.c
-    lib/fribidi-joining-types.c
-    lib/fribidi-mirroring.c
-    lib/fribidi-run.c
-    lib/fribidi-shape.c
-    lib/fribidi-char-sets-cp1256.c
-    lib/fribidi-char-sets-iso8859-8.c
-    lib/fribidi-char-sets-cap-rtl.c
-    lib/fribidi-char-sets-utf8.c
-    lib/fribidi-char-sets.c
-    lib/fribidi-char-sets-cp1255.c
-    lib/fribidi-char-sets-iso8859-6.c
-    """.split()]
+                        lib/fribidi.c
+                        lib/fribidi-arabic.c
+                        lib/fribidi-bidi.c
+                        lib/fribidi-bidi-types.c
+                        lib/fribidi-brackets.c
+                        lib/fribidi-deprecated.c
+                        lib/fribidi-joining.c
+                        lib/fribidi-joining-types.c
+                        lib/fribidi-mirroring.c
+                        lib/fribidi-run.c
+                        lib/fribidi-shape.c
+                        lib/fribidi-char-sets-cp1256.c
+                        lib/fribidi-char-sets-iso8859-8.c
+                        lib/fribidi-char-sets-cap-rtl.c
+                        lib/fribidi-char-sets-utf8.c
+                        lib/fribidi-char-sets.c
+                        lib/fribidi-char-sets-cp1255.c
+                        lib/fribidi-char-sets-iso8859-6.c
+                        """.split()]
     define_macros = [("HAVE_CONFIG_H", 1)] + py_limited_kwds.pop('define_macros',[])
     ext_modules=[
         Extension(
@@ -212,8 +221,11 @@ def get_version():
     return version
 
 setup(
+    name="pyfribidi",
     version=get_version(),
     ext_modules = ext_modules,
+    author="Yaacov Zamir, Nir Soffer, Robin Becker",
+    author_email="kzamir@walla.co.il",
     long_description = open("README.rst").read(),
     packages = find_packages("src"),
     package_dir = {'': "src"},

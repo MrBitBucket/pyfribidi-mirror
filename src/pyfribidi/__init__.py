@@ -4,7 +4,7 @@ pyfribidi uses libfribidi to order text visually using the unicode
 algorithm. pyfribidi can also convert text from visual order to
 logical order, but the conversion may be wrong in certain cases.
 """
-__version__ = '0.14.1'
+__version__ = '0.15.0'
 __all__ = ('log2vis', 'LTR', 'ON', 'RTL', 'WLTR', 'WRTL', 'pyFribidiVersion', 'fribidiVersion', 'fribidiInterfaceVersion', 'fribidiUnicodeVersion', '_log2vis', 'log2vis')
 import sys
 isPy3 = sys.version_info[0]==3
